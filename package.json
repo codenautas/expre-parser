@@ -1,6 +1,6 @@
 {
   "name": "expre-parser",
-  "description": "Módulo de variables calculadas",
+  "description": "expresion parser",
   "version": "0.1.2",
   "author": "Codenautas <codenautas@googlegroups.com>",
   "license": "MIT",
@@ -16,7 +16,7 @@
     "@types/mocha": "~2.2.48",
     "discrepances": "~0.2.2",
     "mocha": "^5.0.5",
-    "types.d.ts": "^0.1.1"
+    "types.d.ts": "^0.1.4"
   },
   "engines": {
     "node": ">= 8.0.0"

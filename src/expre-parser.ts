@@ -31,16 +31,19 @@ export function parse(expression:string):BaseNode{
 }
 
 export interface CompilerOptions{
-    varWrapper:string
-    divWrapper:string
+    varWrapper?:string|null
+    divWrapper?:string|null
 }
 
 export class Compiler{
-    toPostgres(tree:BaseNode, pkExpression:string):string{
+    constructor(private compilerOptions:CompilerOptions){
 
     }
+    toPostgres(tree:BaseNode, pkExpression:string):string{
+        return "not implemented yet"
+    }
     toJavascript(tree:BaseNode, pkExpression:string):string{
-
+        return "not implemented yet"
     }
 }
 

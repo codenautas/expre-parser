@@ -50,7 +50,8 @@ describe("expre-parser", function(){
     });    
     describe("wrapped", function(){
         var compilerOptions={
-            varWrapper:'var'
+            varWrapper:'var',
+            divWrapper:'div'
         }
         var compiler:ExpreParser.Compiler;
         before(function(){
@@ -63,8 +64,9 @@ describe("expre-parser", function(){
         });
     });
     describe("non wrapped", function(){
-        var compilerOptions={
-            varWrapper:false
+        var compilerOptions:ExpreParser.CompilerOptions={
+            varWrapper:null,
+            divWrapper:null
         }
         var compiler:ExpreParser.Compiler;
         before(function(){
