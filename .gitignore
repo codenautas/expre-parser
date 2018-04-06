@@ -57,3 +57,8 @@ typings/
 # dotenv environment variables file
 .env
 
+# Local configs
+local-*
+*-local.*
+
+package-lock.json

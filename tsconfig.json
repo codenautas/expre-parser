@@ -1,0 +1,21 @@
+{
+    "compilerOptions": {
+        "declaration": true,
+        "outDir": "lib",
+        "module": "none",
+        "target": "es2017",
+        "sourceMap": true,
+        "moduleResolution": "node",
+        "lib": [ "es2015" , "dom"],
+        "typeRoots" : ["./node_modules/@types","./node_modules/types.d.ts/modules"],
+        "noImplicitAny": true,
+        "alwaysStrict": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noImplicitReturns": true, /* Report error when not all code paths in function return a value. */
+        "noFallthroughCasesInSwitch": true
+    },
+    "include":[
+        "src", "test"
+    ]
+}
