@@ -4,17 +4,21 @@ export interface BaseNode {
 }
 export interface LiteralNode extends BaseNode {
     type: "literal";
-    dataType: 'string' | 'number';
+    dataType: 'text' | 'decimal';
 }
 export interface IdentifierNode extends BaseNode {
     type: "identifier";
 }
-export interface InternalNode extends BaseNode {
+export interface ExpressionNode extends BaseNode {
     children: BaseNode[];
 }
-export interface BinOperatorNode extends InternalNode {
-    type: "binoperator";
+export interface BinaryExpressionNode extends ExpressionNode {
     children: [BaseNode, BaseNode];
+}
+export interface UnaryExpressionNode extends ExpressionNode {
+    children: [BaseNode];
+}
+export interface FunctionExpressionNode extends ExpressionNode {
 }
 export declare function parse(expression: string): BaseNode;
 export interface CompilerOptions {
