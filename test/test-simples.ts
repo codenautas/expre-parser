@@ -20,12 +20,12 @@ function compare<T>(obtained:T, expected:T){
 describe("expre-parser", function(){
     describe("parser", function(){
         it("parse one text", async function(){
-            let obtained = ExpreParser.parse("'a'");
+            let obtained = ExpreParser.parse("select 5+4");
             let expected = {type:'literal', mainContent:"'a'", value:'a', dataType:'string'};
             compare(obtained,expected);
         });
         it("parse one operator", async function(){
-            let obtained = ExpreParser.parse("4+a");
+            let obtained = ExpreParser.parse("select 'a'+'b' = 6 AND fun(a,b,c) AND not f(3) OR 6/2 is 3");
             let expected = {
                 type:'binoperator', 
                 mainContent:'+',

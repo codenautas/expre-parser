@@ -4,8 +4,6 @@ export interface BaseNode {
 }
 export interface LiteralNode extends BaseNode {
     type: "literal";
-    mainContent: string;
-    value: string | number;
     dataType: 'string' | 'number';
 }
 export interface IdentifierNode extends BaseNode {
@@ -20,10 +18,12 @@ export interface BinOperatorNode extends InternalNode {
 }
 export declare function parse(expression: string): BaseNode;
 export interface CompilerOptions {
-    varWrapper: string;
-    divWrapper: string;
+    varWrapper?: string | null;
+    divWrapper?: string | null;
 }
 export declare class Compiler {
+    private compilerOptions;
+    constructor(compilerOptions: CompilerOptions);
     toPostgres(tree: BaseNode, pkExpression: string): string;
     toJavascript(tree: BaseNode, pkExpression: string): string;
 }
