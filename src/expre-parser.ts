@@ -42,15 +42,16 @@ function processTree(ast:SPBaseNode):BaseNode {
             mainContent: idNode.name
         }
     } else {
-        var args = ast.args? ast.args.expression: ast.expression? [ast.expression]: [ast.left, ast.right];
-        args = args.map(function(arg){ return processTree(arg)});
-        if (ast.type == 'function') {
-            returnValue = ast.name.name + '(' + args.join(',') + ')' ;
+        // TODO procesar los tipo expression
+        // var args = ast.args? ast.args.expression: ast.expression? [ast.expression]: [ast.left, ast.right];
+        // args = args.map(function(arg){ return processTree(arg)});
+        // if (ast.type == 'function') {
+        //     returnValue = ast.name.name + '(' + args.join(',') + ')' ;
         
-        } else {
-            //recursive call
-            returnValue = '(' + (ast.format == 'binary'? transformBinaryOperation(ast.operation, args): global.sqlToJsOps[ast.operator] +' '+ args[0]) + ')';
-        }
+        // } else {
+        //     //recursive call
+        //     returnValue = '(' + (ast.format == 'binary'? transformBinaryOperation(ast.operation, args): global.sqlToJsOps[ast.operator] +' '+ args[0]) + ')';
+        // }
     }
     return returnValue;
 }
