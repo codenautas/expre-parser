@@ -21,22 +21,22 @@ describe("expre-parser", function () {
     describe("parser", function () {
         it("parse one number", async function () {
             let obtained = ExpreParser.parse("select 43");
-            let expected = {type:'literal', mainContent:"43", dataType:'decimal'};
+            let expected = { type: 'literal', mainContent: "43", dataType: 'decimal' };
             compare(obtained, expected);
         });
         it("parse one text", async function () {
             let obtained = ExpreParser.parse("select 'hello world'");
-            let expected = {type:'literal', mainContent:"hello world", dataType:'text'};
+            let expected = { type: 'literal', mainContent: "hello world", dataType: 'text' };
             compare(obtained, expected);
         });
         it("parse one variable", async function () {
             let obtained = ExpreParser.parse("select t.c");
-            let expected = {type:'identifier', mainContent:"t.c"};
+            let expected = { type: 'identifier', mainContent: "t.c" };
             compare(obtained, expected);
         });
         it("parse one function", async function () {
             let obtained = ExpreParser.parse("select f(33)");
-            let expected = {type:'function', mainContent:"f", children:[{type:'literal', mainContent:'33', dataType:'decimal'}]};
+            let expected = { type: 'function', mainContent: "f", children: [{ type: 'literal', mainContent: '33', dataType: 'decimal' }] };
             compare(obtained, expected);
         });
         it("parse one addition", async function () {
@@ -51,9 +51,57 @@ describe("expre-parser", function () {
             }
             compare(obtained, expected);
         });
-        it.skip("parse one complete", async function () {
+        it("parse one complete", async function () {
             let obtained = ExpreParser.parse("select 'a'+'b' = 6 AND fun(a,b,c) AND not f(3) OR 6/2 is 3");
-            let expected = {} // <-- completar aqui 
+            let expected = {
+                type: "binary",
+                mainContent: "or",
+                children: [
+                    {
+                        type: "binary", mainContent: "and", children: [
+                            {
+                                type: "binary", mainContent: "and", children: [
+                                    {
+                                        type: "binary", mainContent: "=", children: [
+                                            {
+                                                type: "binary", mainContent: "+", children: [
+                                                    { type: "literal", mainContent: "a", dataType: "text" },
+                                                    { type: "literal", mainContent: "b", dataType: "text" }
+                                                ]
+                                            },
+                                            { type: "literal", mainContent: "6", dataType: "decimal" }
+                                        ]
+                                    },
+                                    {
+                                        type: "function", mainContent: "fun", children: [
+                                            { type: "identifier", mainContent: "a" },
+                                            { type: "identifier", mainContent: "b" },
+                                            { type: "identifier", mainContent: "c" }]
+                                    }]
+                            },
+                            {
+                                type: "unary", mainContent:"not", children: [
+                                    {
+                                        type: "function", mainContent: "f", children: [
+                                            { type: "literal", mainContent: "3", dataType: "decimal" }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        type: "binary", mainContent: "is", children: [
+                            {
+                                type: "binary", mainContent: "/", children: [
+                                    { type: "literal", mainContent: "6", dataType: "decimal" },
+                                    { type: "literal", mainContent: "2", dataType: "decimal" }
+                                ]
+                            },
+                            { type: "literal", mainContent: "3", dataType: "decimal" }
+                        ]
+                    }]
+            }
             compare(obtained, expected);
         });
     });

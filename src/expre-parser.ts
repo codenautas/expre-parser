@@ -56,15 +56,21 @@ function processTree(ast: SPBaseNode): BaseNode {
         if ((<sqliteParser.ExpressionNode>ast).format == 'binary') {
             expressionAst = ast as sqliteParser.BinaryExpressionNode;
             children = [expressionAst.left, expressionAst.right]
+            returnValue = <BinaryExpressionNode>{
+                type: expressionAst.format,
+                mainContent: expressionAst.operation,
+                children: children.map(exp => processTree(exp))
+            }
         } else { //unary
             expressionAst = <sqliteParser.UnaryExpressionNode>ast;
             children = [expressionAst.expression]
+            returnValue = <UnaryExpressionNode>{
+                type: expressionAst.format,
+                mainContent: expressionAst.operator,
+                children: children.map(exp => processTree(exp))
+            }
         }
-        returnValue = <ExpressionNode>{
-            type: expressionAst.format,
-            mainContent: expressionAst.operation,
-            children: children.map(exp => processTree(exp))
-        }
+   
     }
     return returnValue;
 }
