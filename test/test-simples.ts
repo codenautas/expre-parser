@@ -3,7 +3,8 @@ import * as discrepances from 'discrepances';
 
 import 'mocha';
 
-import * as ExpreParser from '../src/expre-parser';
+import * as EP from '../src/expre-parser';
+import * as sqliteParser from 'sqlite-parser';
 
 function compare<T>(obtained: T, expected: T) {
     try {
@@ -20,39 +21,49 @@ function compare<T>(obtained: T, expected: T) {
 describe("expre-parser", function () {
     describe("parser", function () {
         it("parse one number", async function () {
-            let obtained = ExpreParser.parse("select 43");
-            let expected = { type: 'literal', mainContent: "43", dataType: 'decimal' };
+            let obtained = EP.parse("select 43") as EP.LiteralNode;
+            let entry:sqliteParser.LiteralNode = {type: 'literal', value: "43", variant:'decimal'}
+            let expected = new EP.LiteralNode(entry)
+            assert.equals(obtained.type, 'literal')
+            assert.equals(obtained.mainContent, entry.value)
+            assert.equals(obtained.dataType, entry.variant)
             compare(obtained, expected);
+            obtained = expected;
         });
         it("parse one text", async function () {
-            let obtained = ExpreParser.parse("select 'hello world'");
-            let expected = { type: 'literal', mainContent: "hello world", dataType: 'text' };
+            let obtained = EP.parse("select 'hello world'") as EP.LiteralNode;
+            let expected = new EP.LiteralNode({ type: 'literal', value: "hello world", variant: 'text' });
+            
             compare(obtained, expected);
+            obtained = expected;
         });
         it("parse one variable", async function () {
-            let obtained = ExpreParser.parse("select t.c");
-            let expected = { type: 'identifier', mainContent: "t.c" };
+            let obtained = EP.parse("select t.c")  as EP.IdentifierNode;
+            let expected = new EP.IdentifierNode({ type: 'identifier', name: "t.c" });
             compare(obtained, expected);
+            obtained = expected;
         });
         it("parse one function", async function () {
-            let obtained = ExpreParser.parse("select f(33)");
-            let expected = { type: 'function', mainContent: "f", children: [{ type: 'literal', mainContent: '33', dataType: 'decimal' }] };
+            let obtained = EP.parse("select f(33)") as EP.FunctionExpressionNode;
+            let expected = new EP.FunctionExpressionNode({ type: 'function', name: {type: 'identifier', name: "f"}, args: { expression: [<sqliteParser.LiteralNode>{ type: 'literal', value: '33', variant: 'decimal' }]} });
             compare(obtained, expected);
+            obtained = expected;
         });
         it("parse one addition", async function () {
-            let obtained = ExpreParser.parse("select 5+4");
-            let expected = {
+            let obtained = EP.parse("select 5+4");
+            let expected = <EP.BinaryExpressionNode> {
                 type: "binary",
                 mainContent: "+",
                 children: [
-                    { type: "literal", mainContent: "5", dataType: "decimal" },
-                    { type: "literal", mainContent: "4", dataType: "decimal" }
+                    <EP.LiteralNode>{ type: "literal", mainContent: "5", dataType: "decimal" },
+                    <EP.LiteralNode>{ type: "literal", mainContent: "4", dataType: "decimal" }
                 ]
             }
             compare(obtained, expected);
+            obtained = expected;
         });
         it("parse one complete", async function () {
-            let obtained = ExpreParser.parse("select 'a'+'b' = 6 AND fun(a,b,c) AND not f(3) OR 6/2 is 3");
+            let obtained = EP.parse("select 'a'+'b' = 6 AND fun(a,b,c) AND not f(3) OR 6/2 is 3");
             let expected = {
                 type: "binary",
                 mainContent: "or",
@@ -103,6 +114,7 @@ describe("expre-parser", function () {
                     }]
             }
             compare(obtained, expected);
+            obtained = expected;
         });
     });
     describe("wrapped", function () {
@@ -110,32 +122,32 @@ describe("expre-parser", function () {
             varWrapper: 'var',
             divWrapper: 'div'
         }
-        var compiler: ExpreParser.Compiler;
+        var compiler: EP.Compiler;
         before(function () {
-            compiler = ExpreParser.compiler(compilerOptions);
+            compiler = EP.compiler(compilerOptions);
         });
-        it.skip('wrap varname', function () {
-            let obtained = compiler.toPostgres(ExpreParser.parse("f(t.field)"), 'pk1');
+        it('wrap varname', function () {
+            let obtained = compiler.toPostgres(EP.parse("f(t.field)"), 'pk1');
             let expected = "f(var(t.field))"
             compare(obtained, expected);
         });
     });
     describe("non wrapped", function () {
-        var compilerOptions: ExpreParser.CompilerOptions = {
+        var compilerOptions: EP.CompilerOptions = {
             varWrapper: null,
             divWrapper: null
         }
-        var compiler: ExpreParser.Compiler;
+        var compiler: EP.Compiler;
         before(function () {
-            compiler = ExpreParser.compiler(compilerOptions);
+            compiler = EP.compiler(compilerOptions);
         });
         it.skip('simple expressions toPostgres', function () {
-            let obtained = compiler.toPostgres(ExpreParser.parse("a+b>c and b is null"), 'pk1');
+            let obtained = compiler.toPostgres(EP.parse("a+b>c and b is null"), 'pk1');
             let expected = "a+b>c and b is null"
             compare(obtained, expected);
         });
         it.skip('simple expressions toJavascript', function () {
-            let obtained = compiler.toJavascript(ExpreParser.parse("a+b>c and b is null"), 'pk1');
+            let obtained = compiler.toJavascript(EP.parse("a+b>c and b is null"), 'pk1');
             let expected = "a+b>c && b == null"
             compare(obtained, expected);
         });

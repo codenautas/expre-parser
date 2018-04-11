@@ -3,84 +3,76 @@
 import * as sqliteParser from "sqlite-parser";
 import { ParsedObject, BaseNode as SPBaseNode } from "sqlite-parser";
 
-export interface BaseNode {
-    type: string,
-    mainContent: string
-}
-export interface LiteralNode extends BaseNode {
-    type: "literal"
-    dataType: 'text' | 'decimal'
-}
-export interface IdentifierNode extends BaseNode {
-    type: "identifier"
-}
+// https://github.com/codeschool/sqlite-parser/blob/master/src/parser.js (line 1750 aprox)
+// also see https://www.sqlite.org/datatype3.html
 
-export interface ExpressionNode extends BaseNode {
-    children: BaseNode[]
+export class BaseNode {
+    constructor(public type: string, public mainContent: string) {
+    }
 }
-export interface BinaryExpressionNode extends ExpressionNode {
-    children: [BaseNode, BaseNode]
+export class IdentifierNode extends BaseNode {
+    constructor(ast: sqliteParser.IdentifierNode) {
+        super('identifier', ast.name)
+    }
 }
-export interface UnaryExpressionNode extends ExpressionNode {
-    children: [BaseNode]
+export class LiteralNode extends BaseNode {
+    dataType: sqliteParser.dataType
+    constructor(ast: sqliteParser.LiteralNode) {
+        super('literal', ast.value)
+        this.dataType = ast.variant
+    }
 }
-export interface FunctionExpressionNode extends ExpressionNode {
-
+export class ExpressionNode extends BaseNode {
+    children: BaseNode[];
+    constructor(type: string = 'expression', mainContent: string, children: sqliteParser.BaseNode[], ) {
+        super(type, mainContent);
+        this.children = children.map(exp => processTree(exp))
+    }
+}
+export class BinaryExpressionNode extends ExpressionNode {
+    constructor(ast: sqliteParser.BinaryExpressionNode) {
+        super('binary', ast.operation, [ast.left, ast.right])
+    }
+}
+export class UnaryExpressionNode extends ExpressionNode {
+    constructor(ast: sqliteParser.UnaryExpressionNode) {
+        super('unary', ast.operator, [ast.expression])
+    }
+}
+export class FunctionExpressionNode extends ExpressionNode {
+    constructor(ast: sqliteParser.FunctionNode) {
+        super('function', ast.name.name, ast.args.expression)
+    }
 }
 
 function processTree(ast: SPBaseNode): BaseNode {
     var returnValue: BaseNode;
-    if (ast.type == 'literal') {
-        var literalAst = ast as sqliteParser.LiteralNode
-        returnValue = <LiteralNode>{
-            type: literalAst.type,
-            mainContent: literalAst.value,
-            dataType: literalAst.variant,
-        }
-    } else if (ast.type == 'identifier') {
-        let idNode = <sqliteParser.IdentifierNode>ast;
-        returnValue = <IdentifierNode>{
-            type: idNode.type,
-            mainContent: idNode.name
-        }
-    } else if (ast.type == 'function') {
-        let functionNode = <sqliteParser.FunctionNode>ast;
-        returnValue = <FunctionExpressionNode>{
-            type: functionNode.type,
-            mainContent: functionNode.name.name,
-            children: functionNode.args.expression.map(exp => processTree(exp))
-        }
-    } else if (ast.type == 'expression') {
-        let expressionAst:sqliteParser.BinaryExpressionNode | sqliteParser.UnaryExpressionNode;
-        let children:sqliteParser.BaseNode[];
-        if ((<sqliteParser.ExpressionNode>ast).format == 'binary') {
-            expressionAst = ast as sqliteParser.BinaryExpressionNode;
-            children = [expressionAst.left, expressionAst.right]
-            returnValue = <BinaryExpressionNode>{
-                type: expressionAst.format,
-                mainContent: expressionAst.operation,
-                children: children.map(exp => processTree(exp))
+    switch (ast.type) {
+        case 'literal':
+            returnValue = new LiteralNode(ast as sqliteParser.LiteralNode)
+            break;
+        case 'identifier':
+            returnValue = new IdentifierNode(<sqliteParser.IdentifierNode>ast)
+            break;
+        case 'function':
+            returnValue = new FunctionExpressionNode(<sqliteParser.FunctionNode>ast);
+            break;
+        case 'expression':
+            switch ((ast as sqliteParser.ExpressionNode).format) {
+                case 'binary':
+                    returnValue = new BinaryExpressionNode(ast as sqliteParser.BinaryExpressionNode)
+                    break;
+                case 'unary':
+                    returnValue = new UnaryExpressionNode(ast as sqliteParser.UnaryExpressionNode)
+                    break;
+                default:
+                    break;
             }
-        } else { //unary
-            expressionAst = <sqliteParser.UnaryExpressionNode>ast;
-            children = [expressionAst.expression]
-            returnValue = <UnaryExpressionNode>{
-                type: expressionAst.format,
-                mainContent: expressionAst.operator,
-                children: children.map(exp => processTree(exp))
-            }
-        }
-   
+            break;
+        default:
+            break;
     }
     return returnValue;
-}
-
-export function parse(expression: string): BaseNode {
-    // var node:LiteralNode = {type:'literal', mainContent:"'a'", dataType:'string'};
-    let ast: ParsedObject = sqliteParser(expression);
-    var astStatement: SPBaseNode = ast.statement[0].result[0];
-    let node = processTree(astStatement);
-    return node;
 }
 
 export interface CompilerOptions {
@@ -90,10 +82,12 @@ export interface CompilerOptions {
 
 export class Compiler {
     constructor(private compilerOptions: CompilerOptions) {
-
     }
-    toPostgres(tree: BaseNode, pkExpression: string): string {
-        return "not implemented yet"
+    toPostgres(node: BaseNode, pkExpression: string): string {
+        return 'adsf'
+        // if (node.type)
+
+        //     return resultStr;
     }
     toJavascript(tree: BaseNode, pkExpression: string): string {
         return "not implemented yet"
@@ -102,4 +96,11 @@ export class Compiler {
 
 export function compiler(compilerOptions: CompilerOptions): Compiler {
     return new Compiler(compilerOptions);
+}
+
+export function parse(expression: string): BaseNode {
+    let ast: ParsedObject = sqliteParser(expression);
+    var astStatement: SPBaseNode = ast.statement[0].result[0];
+    let node = processTree(astStatement);
+    return node;
 }
