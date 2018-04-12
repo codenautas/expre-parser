@@ -27,6 +27,7 @@ describe("expre-parser", function () {
             compare(obtained.type, 'literal')
             compare(obtained.mainContent, entry.value)
             compare(obtained.dataType, entry.variant)
+            //Se podria usar flaten en lugar de compare para comprar contenido (sin hacer todo eso)
             compare(obtained, expected);
             obtained = expected;
         });
