@@ -24,41 +24,56 @@ describe("expre-parser", function () {
             let obtained = EP.parse("select 43") as EP.LiteralNode;
             let entry:sqliteParser.LiteralNode = {type: 'literal', value: "43", variant:'decimal'}
             let expected = new EP.LiteralNode(entry)
-            assert.equals(obtained.type, 'literal')
-            assert.equals(obtained.mainContent, entry.value)
-            assert.equals(obtained.dataType, entry.variant)
+            compare(obtained.type, 'literal')
+            compare(obtained.mainContent, entry.value)
+            compare(obtained.dataType, entry.variant)
             compare(obtained, expected);
             obtained = expected;
         });
         it("parse one text", async function () {
             let obtained = EP.parse("select 'hello world'") as EP.LiteralNode;
-            let expected = new EP.LiteralNode({ type: 'literal', value: "hello world", variant: 'text' });
-            
+            let entry:sqliteParser.LiteralNode = {type: 'literal', value: "hello world", variant:'text'}
+            let expected = new EP.LiteralNode(entry)
+            compare(obtained.type, 'literal')
+            compare(obtained.mainContent, entry.value)
+            compare(obtained.dataType, entry.variant)
             compare(obtained, expected);
             obtained = expected;
         });
         it("parse one variable", async function () {
             let obtained = EP.parse("select t.c")  as EP.IdentifierNode;
-            let expected = new EP.IdentifierNode({ type: 'identifier', name: "t.c" });
+            let entry:sqliteParser.IdentifierNode = { type: 'identifier', name: "t.c" }
+            let expected = new EP.IdentifierNode(entry);
+            compare(obtained.type, 'identifier')
+            compare(obtained.mainContent, entry.name)
             compare(obtained, expected);
             obtained = expected;
         });
         it("parse one function", async function () {
             let obtained = EP.parse("select f(33)") as EP.FunctionExpressionNode;
-            let expected = new EP.FunctionExpressionNode({ type: 'function', name: {type: 'identifier', name: "f"}, args: { expression: [<sqliteParser.LiteralNode>{ type: 'literal', value: '33', variant: 'decimal' }]} });
+            let entry: sqliteParser.FunctionNode = { type: 'function', name: {type: 'identifier', name: "f"}, args: { expression: [<sqliteParser.LiteralNode>{ type: 'literal', value: '33', variant: 'decimal' }]} };
+            let expected = new EP.FunctionExpressionNode(entry);
+            compare(obtained.type, 'function')
+            compare(obtained.mainContent, entry.name.name)
+            compare(obtained.children.length, 1)
             compare(obtained, expected);
             obtained = expected;
         });
         it("parse one addition", async function () {
-            let obtained = EP.parse("select 5+4");
-            let expected = <EP.BinaryExpressionNode> {
-                type: "binary",
-                mainContent: "+",
-                children: [
-                    <EP.LiteralNode>{ type: "literal", mainContent: "5", dataType: "decimal" },
-                    <EP.LiteralNode>{ type: "literal", mainContent: "4", dataType: "decimal" }
-                ]
+            let obtained = EP.parse("select 5+4") as EP.BinaryExpressionNode;
+            let entry: sqliteParser.BinaryExpressionNode = {
+                type: "expression",
+                format: 'binary',
+                operation: "+",
+                left: <sqliteParser.LiteralNode>{ type: "literal", value: "5", variant: "decimal" },
+                right: <sqliteParser.LiteralNode>{ type: "literal", value: "4", variant: "decimal" }
             }
+            let expected = new EP.BinaryExpressionNode(entry)
+            compare(obtained.type, 'binary')
+            compare(obtained.mainContent, '+')
+            compare(obtained.children.length, 2)
+            compare(obtained.children[0].type, 'literal')
+            compare(obtained.children[1].mainContent, '4')
             compare(obtained, expected);
             obtained = expected;
         });
@@ -113,7 +128,7 @@ describe("expre-parser", function () {
                         ]
                     }]
             }
-            compare(obtained, expected);
+            discrepances.flatten(obtained, expected);
             obtained = expected;
         });
     });
