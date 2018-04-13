@@ -129,7 +129,8 @@ export class Compiler {
     }
 
     toJavascript(node: BaseNode): string {
-        return node.toJavascript();
+        return node.toPostgres(this); // TODO: change to js 
+        //return node.toJavascript(this);
     }
 
     functionToPostgres(funcNode: FunctionExpressionNode): any {
