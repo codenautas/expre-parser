@@ -64,7 +64,7 @@ export interface CompileDelegation {
 export abstract class BaseNode implements CompileDelegation {
     constructor(public type: string, public mainContent: string) {
     }
-    abstract toPostgres(c: Compiler): any 
+    abstract toPostgres(c: Compiler): any
 }
 export class IdentifierNode extends BaseNode {
     constructor(ast: sqliteParser.IdentifierNode) {
@@ -142,8 +142,9 @@ export class Compiler {
     binaryToPostgres(binNode: BinaryExpressionNode): any {
         let left = binNode.children[0].toPostgres(this);
         let right = binNode.children[1].toPostgres(this)
-        if (binNode.mainContent == '/') {
-            return `div(${left}, ${right})`;// return 'div(' + left + ',' + right + ')';
+        if (binNode.mainContent == '/' && this.options.divWrapper) {
+            return `${this.options.divWrapper}(${left}, ${right})`; //placeholder alternative to:
+            // return this.options.divWrapper + '(' + left + ',' + right + ')';
         } else {
             return left + ' ' + this.baseToPostgres(binNode) + ' ' + right
         }
