@@ -10,13 +10,13 @@
     "src/client"
   ],
   "dependencies": {
-    "@types/node": "~9.4.7",
+    "@types/node": "~9.6.5",
     "sqlite-parser": "~1.0.1"
   },
   "devDependencies": {
-    "@types/mocha": "~2.2.48",
+    "@types/mocha": "~5.0.0",
     "discrepances": "~0.2.2",
-    "mocha": "~5.0.5",
+    "mocha": "~5.1.0",
     "types.d.ts": "~0.1.14"
   },
   "engines": {
