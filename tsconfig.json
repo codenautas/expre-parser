@@ -4,6 +4,7 @@
         "outDir": "lib",
         "module": "none",
         "target": "es2017",
+        // "outFile": "/lib/ind.js", // https://basarat.gitbooks.io/typescript/docs/tips/outFile.html (see summary)
         "sourceMap": true,
         "moduleResolution": "node",
         "lib": [ "es2015" , "dom"],

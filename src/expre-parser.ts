@@ -1,21 +1,14 @@
-"use strict";
-
-// https://github.com/codeschool/sqlite-parser/blob/master/src/parser.js (line 1750 aprox)
-// also see https://www.sqlite.org/datatype3.html
-
 import * as sqliteParser from "sqlite-parser";
 import { ParsedObject, BaseNode as SPBaseNode } from "sqlite-parser";
 
-export interface CompilerOptions {
-    varWrapper?: string | null
-    divWrapper?: string | null
-}
+import { CompilerOptions, Compiler } from "./compiler";
+import { BaseNode, LiteralNode, IdentifierNode, FunctionExpressionNode, BinaryExpressionNode, UnaryExpressionNode } from "./ast-model";
 
 // ########## API class #######
 export class ExpresionParser {
 
     static compileToPostgres(expression: string, opts: CompilerOptions, pkExpression: string): string {
-        return (new Compiler(opts)).toPostgres(ExpresionParser.parse(expression), pkExpression);
+        return (new Compiler(opts)).toCode(ExpresionParser.parse(expression), pkExpression);
     }
 
     static parse(expression: string): BaseNode {
@@ -54,124 +47,5 @@ export class ExpresionParser {
                 break;
         }
         return resultNode;
-    }
-}
-
-export interface CompileDelegation {
-    toPostgres(c: Compiler): any;
-}
-
-export abstract class BaseNode implements CompileDelegation {
-    constructor(public type: string, public mainContent: string) {
-    }
-    abstract toPostgres(c: Compiler): any
-}
-export class IdentifierNode extends BaseNode {
-    constructor(ast: sqliteParser.IdentifierNode) {
-        super('identifier', ast.name)
-    }
-    toPostgres(c: Compiler): string {
-        return c.identifierToPostgres(this)
-    }
-}
-export class LiteralNode extends BaseNode {
-    dataType: sqliteParser.dataType
-    constructor(ast: sqliteParser.LiteralNode) {
-        super('literal', ast.value)
-        this.dataType = ast.variant
-    }
-    toPostgres(c: Compiler): any {
-        return c.literalToPostgres(this)
-    }
-}
-export abstract class ExpressionNode extends BaseNode {
-    children: BaseNode[];
-    constructor(type: string = 'expression', mainContent: string, children: sqliteParser.BaseNode[], ) {
-        super(type, mainContent);
-        this.children = children.map(exp => ExpresionParser.convertNode(exp))
-    }
-    abstract toPostgres(c: Compiler): any
-}
-export class BinaryExpressionNode extends ExpressionNode {
-    constructor(ast: sqliteParser.BinaryExpressionNode) {
-        super('binary', ast.operation, [ast.left, ast.right])
-    }
-    toPostgres(c: Compiler): any {
-        return c.binaryToPostgres(this)
-    }
-}
-export class UnaryExpressionNode extends ExpressionNode {
-    constructor(ast: sqliteParser.UnaryExpressionNode) {
-        super('unary', ast.operator, [ast.expression])
-    }
-    toPostgres(c: Compiler): any {
-        return c.unaryToPostgres(this)
-    }
-}
-export class FunctionExpressionNode extends ExpressionNode {
-    constructor(ast: sqliteParser.FunctionNode) {
-        super('function', ast.name.name, ast.args.expression)
-    }
-    toPostgres(c: Compiler): any {
-        return c.functionToPostgres(this)
-    }
-}
-
-export class Compiler {
-
-    protected pkExpression: string;
-    constructor(public options: CompilerOptions) {
-    }
-
-    toPostgres(node: BaseNode, pkExpression: string): string {
-        this.pkExpression = pkExpression;
-        return node.toPostgres(this);
-    }
-
-    toJavascript(node: BaseNode): string {
-        return node.toPostgres(this); // TODO: change to js 
-        //return node.toJavascript(this);
-    }
-
-    functionToPostgres(funcNode: FunctionExpressionNode): any {
-        return this.baseToPostgres(funcNode) + '(' + funcNode.children.map(child => child.toPostgres(this)).join(', ') + ')';
-    }
-    unaryToPostgres(unaryNode: UnaryExpressionNode): any {
-        return this.baseToPostgres(unaryNode) + ' ' + unaryNode.children[0].toPostgres(this)
-    }
-    binaryToPostgres(binNode: BinaryExpressionNode): any {
-        let left = binNode.children[0].toPostgres(this);
-        let right = binNode.children[1].toPostgres(this)
-        if (binNode.mainContent == '/' && this.options.divWrapper) {
-            return `${this.options.divWrapper}(${left}, ${right})`; //placeholder alternative to:
-            // return this.options.divWrapper + '(' + left + ',' + right + ')';
-        } else {
-            return left + ' ' + this.baseToPostgres(binNode) + ' ' + right
-        }
-    }
-    literalToPostgres(litNode: LiteralNode): string | number {
-        let resultVal: string | number;
-        switch (litNode.dataType) {
-            case 'text':
-                resultVal = "'" + this.baseToPostgres(litNode) + "'"
-                break;
-            case 'decimal':
-                resultVal = parseFloat(this.baseToPostgres(litNode))
-                break;
-            case 'null':
-                resultVal = this.baseToPostgres(litNode)
-                break;
-            default:
-                break;
-        }
-        return resultVal;
-    }
-
-    identifierToPostgres(idNode: IdentifierNode): string {
-        return !this.options.varWrapper ? this.baseToPostgres(idNode) : this.options.varWrapper + '(' + this.baseToPostgres(idNode) + ')'
-    }
-
-    baseToPostgres(node: BaseNode): string {
-        return node.mainContent;
     }
 }
