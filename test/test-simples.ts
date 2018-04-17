@@ -5,7 +5,7 @@ import * as discrepances from 'discrepances';
 
 import * as EPModel from '../src/ast-model';
 import { CompilerOptions, Compiler } from '../src/compiler';
-import { ExpresionParser} from '../src/expre-parser';
+import { ExpresionParser } from '../src/expre-parser';
 
 function compare<T>(obtained: T, expected: T, opts?: object) {
     try {
@@ -117,18 +117,33 @@ describe("expre-parser", function () {
             compare(obtained, expected);
         });
         it('simple expressions toJavascript', function () {
-            compilerOptions.language='js'
+            compilerOptions.language = 'js'
             compiler = new Compiler(compilerOptions);
             let obtained = compiler.toCode(ExpresionParser.parse("select (a+b)>c AND b is null OR not t.c"), 'pk2');
             let expected = "a + b > c && b == null || ! t.c"
             compare(obtained, expected);
         });
         it("parse is not and <>", async function () {
-            compilerOptions.language='js'
+            compilerOptions.language = 'js'
             compiler = new Compiler(compilerOptions);
             let obtained = compiler.toCode(ExpresionParser.parse("select b is not null and b <> 3"), 'pk2');
             let expected = "b != null && b != 3"
             compare(obtained, expected);
+        });
+    });
+    describe("get used variables and functions", function () {
+        let expression = "select fun(a,parse('hello'),3,OTRA_VAR) + 3 * t.c - max(a,min(22,3),o.u)";
+        let node = ExpresionParser.parse(expression);
+        it('get variables', function () {
+            let obtainedVars: string[] = node.getInsumos().variables.sort();
+            let expectedVars = ['a', 'o.u', 'otra_var', 't.c']; //sorted
+            discrepances.showAndThrow(obtainedVars, expectedVars);
+        });
+        it('get functions', function () {
+            let node = ExpresionParser.parse(expression);
+            let obtainedFunctions: string[] = node.getInsumos().funciones.sort();
+            let expectedFunctions = ['fun', 'max', 'min', 'parse'];
+            discrepances.showAndThrow(obtainedFunctions, expectedFunctions);
         });
     });
 });
