@@ -4,7 +4,7 @@
         "outDir": "lib",
         "module": "none",
         "target": "es2017",
-        // "outFile": "/lib/ind.js", // https://basarat.gitbooks.io/typescript/docs/tips/outFile.html (see summary)
+        // "outFile": "lib/ind.js", // https://basarat.gitbooks.io/typescript/docs/tips/outFile.html (see summary) // https://www.typescriptlang.org/docs/handbook/namespaces.html#splitting-across-files (see also triple slash directives)
         "sourceMap": true,
         "moduleResolution": "node",
         "lib": [ "es2015" , "dom"],
