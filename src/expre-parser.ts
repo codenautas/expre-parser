@@ -12,7 +12,8 @@ export default class ExpresionParser {
     }
 
     static parse(expression: string): BaseNode {
-        let ast: ParsedObject = sqliteParser(expression);
+        // sqliteParser works in expressions with "select" string at begining
+        let ast: ParsedObject = sqliteParser('select ' + expression);
         var astStatement: SPBaseNode = ast.statement[0].result[0];
         let node = ExpresionParser.convertNode(astStatement);
         return node;
