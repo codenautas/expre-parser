@@ -5,7 +5,7 @@ import * as discrepances from 'discrepances';
 
 import * as EPModel from '../src/ast-model';
 import { CompilerOptions, Compiler } from '../src/compiler';
-import { ExpresionParser } from '../src/expre-parser';
+import ExpresionParser from '../src/expre-parser';
 
 function compare<T>(obtained: T, expected: T, opts?: object) {
     try {

@@ -4,7 +4,7 @@
 // also see https://www.sqlite.org/datatype3.html
 
 import * as sqliteParser from "sqlite-parser";
-import { ExpresionParser } from "./expre-parser";
+import ExpresionParser from "./expre-parser";
 import { Compiler } from "./compiler";
 
 

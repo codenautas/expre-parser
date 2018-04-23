@@ -26,7 +26,7 @@
   "scripts": {
     "prepublish": "tsc || echo \"continue w/error\"",
     "x-test": "tsc || echo \"continue with errors\" && mocha --reporter spec --bail --check-leaks lib\\test\\*.js",
-    "test": "(tsc || echo \"continue with errors\") && mocha --reporter spec --bail --check-leaks lib\\test\\*.js",
+    "test": "(tsc || echo \"continue with errors\") && mocha --reporter spec --bail --check-leaks lib/test/*.js",
     "test-cov": "istanbul cover node_modules/mocha/bin/_mocha -- --reporter dot --check-leaks test/"
   },
   "qa-control": {

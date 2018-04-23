@@ -5,7 +5,7 @@ import { CompilerOptions, Compiler } from "./compiler";
 import { BaseNode, LiteralNode, IdentifierNode, FunctionExpressionNode, BinaryExpressionNode, UnaryExpressionNode } from "./ast-model";
 
 // ########## API class #######
-export class ExpresionParser {
+export default class ExpresionParser {
 
     static compileToPostgres(expression: string, opts: CompilerOptions, pkExpression: string): string {
         return (new Compiler(opts)).toCode(ExpresionParser.parse(expression), pkExpression);
@@ -49,3 +49,7 @@ export class ExpresionParser {
         return resultNode;
     }
 }
+
+// Re-export 'internal' modules to being used externally
+export * from './ast-model';
+export * from './compiler';
