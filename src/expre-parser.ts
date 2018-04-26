@@ -4,16 +4,9 @@ import { ParsedObject, BaseNode as SPBaseNode } from "sqlite-parser";
 import { CompilerOptions, Compiler } from "./compiler";
 import { BaseNode, LiteralNode, IdentifierNode, FunctionExpressionNode, BinaryExpressionNode, UnaryExpressionNode } from "./ast-model";
 
-
-
 // Re-export 'internal' modules to being used externally
 export * from './ast-model';
 export * from './compiler';
-
-// ########## API #######
-export function compileToPostgres(expression: string, opts: CompilerOptions, pkExpression: string): string {
-    return (new Compiler(opts)).toCode(parse(expression), pkExpression);
-}
 
 export function parse(expression: string): BaseNode {
     // sqliteParser works in expressions with "select" string at begining
