@@ -88,18 +88,18 @@ describe("expre-parser", function () {
             compiler = new Compiler(compilerOptions);
         });
         it('wrap varname', function () {
-            let obtained = compiler.toCode(ExpresionParser.parse("f(t.field, 33, 'aa', b, '99')"), 'pk1');
+            let obtained = compiler.toCode(ExpresionParser.parse("f(t.field, 33, 'aa', b, '99')"), 'pk1,t2');
             let expected = "f(var(t.field), 33, 'aa', var(b), '99')"
             compare(obtained, expected);
         });
-        it('wrap simple division', function () {
-            let obtained = compiler.toCode(ExpresionParser.parse("7/4"), 'pk1');
-            let expected = "div(7, 4)"
+        it.skip('wrap simple division', function () {
+            let obtained = compiler.toCode(ExpresionParser.parse("7/4"), 'pk1,t2');
+            let expected = "div(7, 4, pk1,t2)"
             compare(obtained, expected);
         });
-        it('wrap division', function () {
+        it.skip('wrap division', function () {
             let obtained = compiler.toCode(ExpresionParser.parse("a/4 > 3 AND t.field/b = 8 OR 3/0 = 1 AND 0/4 < 2"), 'pk1');
-            let expected = "div(var(a), 4) > 3 and div(var(t.field), var(b)) = 8 or div(3, 0) = 1 and div(0, 4) < 2"
+            let expected = "div(var(a), 4) > 3 and div(var(t.field), var(b), pk1) = 8 or div(3, 0, pk1) = 1 and div(0, 4, pk1) < 2"
             compare(obtained, expected);
         });
     });
@@ -128,6 +128,52 @@ describe("expre-parser", function () {
             compiler = new Compiler(compilerOptions);
             let obtained = compiler.toCode(ExpresionParser.parse("b is not null and b <> 3"), 'pk2');
             let expected = "b != null && b != 3"
+            compare(obtained, expected);
+        });
+    });
+    describe("case", function(){
+        var compilerOptions: CompilerOptions={
+            varWrapper: 'vx',
+            divWrapper: null,
+            elseWrapper: 'without_else',
+            language: 'sql'
+        }
+        var compiler: Compiler;
+        it("parse case when else end", async function () {
+            compilerOptions.language = 'js'
+            compiler = new Compiler(compilerOptions);
+            let obtainedTree = ExpresionParser.parse("case when a then 32 else 33 end");
+            let expectedTree: object = { 
+                type: "case", mainContent:null, children: [
+                    { type: "when-then-case", mainContent:null, children:[
+                        { type: "identifier", mainContent: "a"},
+                        { type: "literal", mainContent: "32", dataType: "decimal" },
+                    ]},
+                    { type: "else-case", mainContent:null, children:[
+                        { type: "literal", mainContent: "33", dataType: "decimal" }
+                    ]}
+                ] 
+            }
+            compare(obtainedTree, expectedTree, { duckTyping: true });
+            let obtained = compiler.toCode(obtainedTree, 'pk2');
+            let expected = "case when vx(a) then 32 else 33 end";
+            compare(obtained, expected);
+        });
+        it.skip("parse case when else end", async function () {
+            compilerOptions.language = 'js'
+            compiler = new Compiler(compilerOptions);
+            let obtainedTree = ExpresionParser.parse("case when a then 32 end");
+            let expectedTree: object = { 
+                type: "case", mainContent:null, children: [
+                    { type: "when-then-case", mainContent:null, children:[
+                        { type: "identifier", mainContent: "a"},
+                        { type: "literal", mainContent: "32", dataType: "decimal" },
+                    ]},
+                ] 
+            }
+            compare(obtainedTree, expectedTree, { duckTyping: true });
+            let obtained = compiler.toCode(obtainedTree, 'pk1,pk2');
+            let expected = "case when vx(a) then 32 else without_else(pk1,pk2) end";
             compare(obtained, expected);
         });
     });

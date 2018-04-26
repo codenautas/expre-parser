@@ -2,7 +2,7 @@ import * as sqliteParser from "sqlite-parser";
 import { ParsedObject, BaseNode as SPBaseNode } from "sqlite-parser";
 
 import { CompilerOptions, Compiler } from "./compiler";
-import { BaseNode, LiteralNode, IdentifierNode, FunctionExpressionNode, BinaryExpressionNode, UnaryExpressionNode } from "./ast-model";
+import { BaseNode, LiteralNode, IdentifierNode, FunctionExpressionNode, BinaryExpressionNode, UnaryExpressionNode, CaseExpressionNode, WhenThenCaseNode, ElseCaseNode } from "./ast-model";
 
 // Re-export 'internal' modules to being used externally
 export * from './ast-model';
@@ -29,19 +29,36 @@ export function convertNode(ast: SPBaseNode): BaseNode {
         case 'function':
             resultNode = new FunctionExpressionNode(<sqliteParser.FunctionNode>ast);
             break;
-        case 'expression':
-            switch ((ast as sqliteParser.ExpressionNode).format) {
-                case 'binary':
-                    resultNode = new BinaryExpressionNode(<sqliteParser.BinaryExpressionNode>ast)
+        case 'condition':
+            switch ((ast as sqliteParser.ExpressionNode).variant) {
+                case 'when':
+                    resultNode = new WhenThenCaseNode(ast);
                     break;
-                case 'unary':
-                    resultNode = new UnaryExpressionNode(<sqliteParser.UnaryExpressionNode>ast)
-                    break;
-                default:
+                case 'else':
+                    resultNode = new ElseCaseNode(ast);
                     break;
             }
             break;
+        case 'expression':
+            if((ast as sqliteParser.ExpressionNode).variant=='case'){
+                resultNode = new CaseExpressionNode(ast)
+                break;
+            }else{
+                switch ((ast as sqliteParser.ExpressionNode).format) {
+                    case 'binary':
+                        resultNode = new BinaryExpressionNode(<sqliteParser.BinaryExpressionNode>ast)
+                        break;
+                    case 'unary':
+                        resultNode = new UnaryExpressionNode(<sqliteParser.UnaryExpressionNode>ast)
+                        break;
+                    default:
+                        throw new Error("ast.expression not consider: "+ast.type)
+                        break;
+                }
+            }
+            break;
         default:
+            throw new Error("ast.type not consider: "+ast.type)
             break;
     }
     return resultNode;

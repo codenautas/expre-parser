@@ -1,8 +1,9 @@
-import { BaseNode, LiteralNode, IdentifierNode, BinaryExpressionNode, UnaryExpressionNode, FunctionExpressionNode } from "./ast-model";
+import { BaseNode, LiteralNode, IdentifierNode, BinaryExpressionNode, UnaryExpressionNode, FunctionExpressionNode, CaseExpressionNode, WhenThenCaseNode, ElseCaseNode } from "./ast-model";
 
 export interface CompilerOptions {
     varWrapper?: string | null
     divWrapper?: string | null
+    elseWrapper?: string | null
     language?: 'js' | 'sql'
 }
 
@@ -43,6 +44,24 @@ export class Compiler implements CompilerMethods {
         } else {
             return left + ' ' + this.getOperator(this.baseToCode(binNode)) + ' ' + right
         }
+    }
+
+    caseToCode(caseNode:CaseExpressionNode): string {
+        var pkPart="obtener de la llamada";
+        return 'case'+caseNode.children.map(node=>node.toCode(this)).join('')+
+            (caseNode.children.length && caseNode.children[caseNode.children.length-1].type!='else-case'?
+                `${this.options.elseWrapper}(${pkPart})`
+            :'')+
+            ' end';
+    }
+
+    whenThenCaseToCode(caseNode:WhenThenCaseNode): string {
+        return ' when '+caseNode.children[0].toCode(this)+
+               ' then '+caseNode.children[1].toCode(this);
+    }
+
+    elseCaseToCode(caseNode:ElseCaseNode): string {
+        return ' else '+caseNode.children[0].toCode(this);
     }
 
     getOperator(operator: string): string {

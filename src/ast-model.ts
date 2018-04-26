@@ -103,3 +103,27 @@ export class FunctionExpressionNode extends ExpressionNode {
         return [this.mainContent].concat(...super.getFunciones());
     }
 }
+export class CaseExpressionNode extends ExpressionNode {
+    constructor(ast) {
+        super('case', null, ast.expression)
+    }
+    toCode(c: Compiler): string {
+        return c.caseToCode(this)
+    }
+}
+export class WhenThenCaseNode extends ExpressionNode {
+    constructor(ast) {
+        super('when-then-case', null, [ast.condition, ast.consequent])
+    }
+    toCode(c: Compiler): string {
+        return c.whenThenCaseToCode(this)
+    }
+}
+export class ElseCaseNode extends ExpressionNode {
+    constructor(ast) {
+        super('else-case', null, [ast.consequent])
+    }
+    toCode(c: Compiler): string {
+        return c.elseCaseToCode(this)
+    }
+}
