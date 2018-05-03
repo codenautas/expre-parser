@@ -54,6 +54,19 @@ describe("expre-parser", function () {
             compare(obtained, expectedParsed);
             obtained = expectedParsed; //assignation to TS type check   
         });
+        it("parse true and false", async function () {
+            let obtained = ExpresionParser.parse("f(true, false)") as EPModel.FunctionExpressionNode;
+            // TODO arreglar esto:
+            let expectedParsed = new EPModel.FunctionExpressionNode({ type: 'function', name: { type: 'identifier', name: "f" }, args: { expression: [<sqliteParser.LiteralNode>{ type: 'literal', value: '33', variant: 'decimal' }] } });
+            // esto tiene que quedar así:
+            let expectedJsonObj: object = { type: "function", mainContent: "f", children: [
+                { type: "literal", mainContent: "true" , dataType: "boolean" },
+                { type: "literal", mainContent: "false", dataType: "boolean" }
+            ] }
+            compare(obtained, expectedJsonObj, { duckTyping: true });
+            compare(obtained, expectedParsed);
+            obtained = expectedParsed; //assignation to TS type check   
+        });
         it("parse one addition", async function () {
             let obtained = ExpresionParser.parse("5+4") as EPModel.BinaryExpressionNode;
             let expectedParsed = new EPModel.BinaryExpressionNode({
@@ -178,7 +191,7 @@ describe("expre-parser", function () {
         });
     });
     describe("get used variables and functions", function () {
-        let expression = "fun(a,parse('hello'),3,OTRA_VAR) + 3 * t.c - max(a,min(22,3),o.u)";
+        let expression = "fun(a,parse('hello'),3,OTRA_VAR) + 3 * t.c - max(a,min(22,3),o.u) or true";
         let node = ExpresionParser.parse(expression);
         it('get variables', function () {
             let obtainedVars: string[] = node.getInsumos().variables.sort();
