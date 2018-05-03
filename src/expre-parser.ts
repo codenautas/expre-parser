@@ -1,5 +1,5 @@
 import * as sqliteParser from "sqlite-parser";
-import { ParsedObject, BaseNode as SPBaseNode } from "sqlite-parser";
+import { ParsedObject, BaseNode as SPBaseNode, IdentifierNode as SPIdentifierNode } from "sqlite-parser";
 
 import { CompilerOptions, Compiler } from "./compiler";
 import { BaseNode, LiteralNode, IdentifierNode, FunctionExpressionNode, BinaryExpressionNode, UnaryExpressionNode, CaseExpressionNode, WhenThenCaseNode, ElseCaseNode } from "./ast-model";
@@ -24,7 +24,13 @@ export function convertNode(ast: SPBaseNode): BaseNode {
             resultNode = new LiteralNode(<sqliteParser.LiteralNode>ast)
             break;
         case 'identifier':
-            resultNode = new IdentifierNode(<sqliteParser.IdentifierNode>ast)
+            //sqlite-parser toma como identifier los literales "true" y "false" -> se convierten a literal
+            let idAst = <SPIdentifierNode> ast;
+            if (idAst.name == "true" || idAst.name == 'false'){
+                resultNode = new LiteralNode({type:'literal', value:idAst.name, variant: 'boolean'})
+            } else {
+                resultNode = new IdentifierNode(<sqliteParser.IdentifierNode>ast)
+            }
             break;
         case 'function':
             resultNode = new FunctionExpressionNode(<sqliteParser.FunctionNode>ast);

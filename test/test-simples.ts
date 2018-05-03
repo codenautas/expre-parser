@@ -57,15 +57,24 @@ describe("expre-parser", function () {
         it("parse true and false", async function () {
             let obtained = ExpresionParser.parse("f(true, false)") as EPModel.FunctionExpressionNode;
             // TODO arreglar esto:
-            let expectedParsed = new EPModel.FunctionExpressionNode({ type: 'function', name: { type: 'identifier', name: "f" }, args: { expression: [<sqliteParser.LiteralNode>{ type: 'literal', value: '33', variant: 'decimal' }] } });
+            // let expectedParsed = new EPModel.FunctionExpressionNode(
+            //     {
+            //         type: 'function', name: { type: 'identifier', name: "f" },
+            //         args: {
+            //             expression: [
+            //                 <sqliteParser.LiteralNode>{ type: 'literal', value: '33', variant: 'decimal' }]
+            //         }
+            //     });
             // esto tiene que quedar así:
-            let expectedJsonObj: object = { type: "function", mainContent: "f", children: [
-                { type: "literal", mainContent: "true" , dataType: "boolean" },
-                { type: "literal", mainContent: "false", dataType: "boolean" }
-            ] }
+            let expectedJsonObj: object = {
+                type: "function", mainContent: "f", children: [
+                    { type: "literal", mainContent: "true", dataType: "boolean" },
+                    { type: "literal", mainContent: "false", dataType: "boolean" }
+                ]
+            }
             compare(obtained, expectedJsonObj, { duckTyping: true });
-            compare(obtained, expectedParsed);
-            obtained = expectedParsed; //assignation to TS type check   
+            // compare(obtained, expectedParsed);
+            // obtained = expectedParsed; //assignation to TS type check   
         });
         it("parse one addition", async function () {
             let obtained = ExpresionParser.parse("5+4") as EPModel.BinaryExpressionNode;
@@ -144,8 +153,8 @@ describe("expre-parser", function () {
             compare(obtained, expected);
         });
     });
-    describe("case", function(){
-        var compilerOptions: CompilerOptions={
+    describe("case", function () {
+        var compilerOptions: CompilerOptions = {
             varWrapper: 'vx',
             divWrapper: null,
             elseWrapper: 'without_else',
@@ -156,16 +165,20 @@ describe("expre-parser", function () {
             compilerOptions.language = 'js'
             compiler = new Compiler(compilerOptions);
             let obtainedTree = ExpresionParser.parse("case when a then 32 else 33 end");
-            let expectedTree: object = { 
-                type: "case", mainContent:null, children: [
-                    { type: "when-then-case", mainContent:null, children:[
-                        { type: "identifier", mainContent: "a"},
-                        { type: "literal", mainContent: "32", dataType: "decimal" },
-                    ]},
-                    { type: "else-case", mainContent:null, children:[
-                        { type: "literal", mainContent: "33", dataType: "decimal" }
-                    ]}
-                ] 
+            let expectedTree: object = {
+                type: "case", mainContent: null, children: [
+                    {
+                        type: "when-then-case", mainContent: null, children: [
+                            { type: "identifier", mainContent: "a" },
+                            { type: "literal", mainContent: "32", dataType: "decimal" },
+                        ]
+                    },
+                    {
+                        type: "else-case", mainContent: null, children: [
+                            { type: "literal", mainContent: "33", dataType: "decimal" }
+                        ]
+                    }
+                ]
             }
             compare(obtainedTree, expectedTree, { duckTyping: true });
             let obtained = compiler.toCode(obtainedTree, 'pk2');
@@ -176,13 +189,15 @@ describe("expre-parser", function () {
             compilerOptions.language = 'js'
             compiler = new Compiler(compilerOptions);
             let obtainedTree = ExpresionParser.parse("case when a then 32 end");
-            let expectedTree: object = { 
-                type: "case", mainContent:null, children: [
-                    { type: "when-then-case", mainContent:null, children:[
-                        { type: "identifier", mainContent: "a"},
-                        { type: "literal", mainContent: "32", dataType: "decimal" },
-                    ]},
-                ] 
+            let expectedTree: object = {
+                type: "case", mainContent: null, children: [
+                    {
+                        type: "when-then-case", mainContent: null, children: [
+                            { type: "identifier", mainContent: "a" },
+                            { type: "literal", mainContent: "32", dataType: "decimal" },
+                        ]
+                    },
+                ]
             }
             compare(obtainedTree, expectedTree, { duckTyping: true });
             let obtained = compiler.toCode(obtainedTree, 'pk1,pk2');
