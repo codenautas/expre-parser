@@ -12,17 +12,21 @@ import { Compiler } from "./compiler";
 export abstract class BaseNode {
     constructor(public type: string, public mainContent: string) {
     }
-    
+
     //must be overriden in concrete subclasses 
     abstract toCode(c: Compiler): string
     abstract getFunciones(): string[]
     abstract getVariables(): string[]
+    abstract getAliases(): string[]
 
-    getInsumos(): { variables: string[], funciones: string[] } {
+    getInsumos(): { variables: string[], aliases: string[], funciones: string[] } {
         // Using Set to remove duplicates
         return {
             variables: Array.from(new Set(
                 this.getVariables()
+            )),
+            aliases: Array.from(new Set(
+                this.getAliases()
             )),
             funciones: Array.from(new Set(
                 this.getFunciones()
@@ -38,8 +42,12 @@ export abstract class leafNode extends BaseNode {
 }
 
 export class IdentifierNode extends leafNode {
+    alias: string;
     constructor(ast: sqliteParser.IdentifierNode) {
-        super('identifier', ast.name)
+        super('identifier', ast.name);
+        if (ast.name.includes('.')) {
+            this.alias = ast.name.split('.')[0];
+        }
     }
     toCode(c: Compiler): string {
         return c.identifierToCode(this)
@@ -47,6 +55,10 @@ export class IdentifierNode extends leafNode {
     getVariables(): string[] {
         return [this.mainContent];
     }
+    getAliases(): string[] {
+        return this.alias ? [this.alias] : [];
+    }
+
 }
 export class LiteralNode extends leafNode {
     dataType: sqliteParser.dataType
@@ -60,6 +72,9 @@ export class LiteralNode extends leafNode {
     getVariables(): string[] {
         return [];
     }
+    getAliases(): string[] {
+        return [];
+    }
 }
 export abstract class ExpressionNode extends BaseNode {
     children: BaseNode[];
@@ -70,6 +85,9 @@ export abstract class ExpressionNode extends BaseNode {
 
     getVariables(): string[] {
         return [].concat(...this.children.map(nodo => nodo.getVariables()))
+    }
+    getAliases(): string[] {
+        return [].concat(...this.children.map(nodo => nodo.getAliases()));
     }
     getFunciones(): string[] {
         return [].concat(...this.children.map(nodo => nodo.getFunciones()))
@@ -104,7 +122,7 @@ export class FunctionExpressionNode extends ExpressionNode {
     }
 }
 export class CaseExpressionNode extends ExpressionNode {
-    constructor(ast) {
+    constructor(ast:any) {
         super('case', null, ast.expression)
     }
     toCode(c: Compiler): string {
@@ -112,7 +130,7 @@ export class CaseExpressionNode extends ExpressionNode {
     }
 }
 export class WhenThenCaseNode extends ExpressionNode {
-    constructor(ast) {
+    constructor(ast:any) {
         super('when-then-case', null, [ast.condition, ast.consequent])
     }
     toCode(c: Compiler): string {
@@ -120,7 +138,7 @@ export class WhenThenCaseNode extends ExpressionNode {
     }
 }
 export class ElseCaseNode extends ExpressionNode {
-    constructor(ast) {
+    constructor(ast:any) {
         super('else-case', null, [ast.consequent])
     }
     toCode(c: Compiler): string {

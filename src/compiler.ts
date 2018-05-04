@@ -39,7 +39,7 @@ export class Compiler implements CompilerMethods {
         let left = binNode.children[0].toCode(this);
         let right = binNode.children[1].toCode(this)
         if (binNode.mainContent == '/' && this.options.divWrapper) {
-            return `${this.options.divWrapper}(${left}, ${right})`; //placeholder alternative to:
+            return `${this.options.divWrapper}(${left}, ${right}`+ (this.pkExpression? ', '+this.pkExpression:'') + ')' ;
             // return this.options.divWrapper + '(' + left + ',' + right + ')';
         } else {
             return left + ' ' + this.getOperator(this.baseToCode(binNode)) + ' ' + right
@@ -47,10 +47,9 @@ export class Compiler implements CompilerMethods {
     }
 
     caseToCode(caseNode:CaseExpressionNode): string {
-        var pkPart="obtener de la llamada";
         return 'case'+caseNode.children.map(node=>node.toCode(this)).join('')+
             (caseNode.children.length && caseNode.children[caseNode.children.length-1].type!='else-case'?
-                `${this.options.elseWrapper}(${pkPart})`
+                ` else ${this.options.elseWrapper}(${this.pkExpression})`
             :'')+
             ' end';
     }
@@ -82,13 +81,13 @@ export class Compiler implements CompilerMethods {
     }
 
     literalToCode(litNode: LiteralNode): string {
-        // switch (litNode.dataType) {
-        //     case 'text': return "'" + this.baseToCode(litNode) + "'"
-        //     case 'decimal': return parseFloat(this.baseToCode(litNode))
-        //     case 'null': return this.baseToCode(litNode)
-        //     default: return this.baseToCode(litNode)
-        // }
         let val = this.baseToCode(litNode);
+        // switch (litNode.dataType) {
+        //     case 'text': return "'" + val + "'"
+        //     case 'decimal': return parseFloat(val)
+        //     case 'null': return val
+        //     default: return val
+        // }
         return (litNode.dataType == 'text')? "'" + val + "'" : val;
     }
 

@@ -1,7 +1,6 @@
 import * as sqliteParser from "sqlite-parser";
 import { ParsedObject, BaseNode as SPBaseNode, IdentifierNode as SPIdentifierNode } from "sqlite-parser";
 
-import { CompilerOptions, Compiler } from "./compiler";
 import { BaseNode, LiteralNode, IdentifierNode, FunctionExpressionNode, BinaryExpressionNode, UnaryExpressionNode, CaseExpressionNode, WhenThenCaseNode, ElseCaseNode } from "./ast-model";
 
 // Re-export 'internal' modules to being used externally
@@ -58,14 +57,12 @@ export function convertNode(ast: SPBaseNode): BaseNode {
                         resultNode = new UnaryExpressionNode(<sqliteParser.UnaryExpressionNode>ast)
                         break;
                     default:
-                        throw new Error("ast.expression not consider: "+ast.type)
-                        break;
+                        throw new Error("ast.expression not consider: "+ast.type);
                 }
             }
             break;
         default:
-            throw new Error("ast.type not consider: "+ast.type)
-            break;
+            throw new Error("ast.type not consider: "+ast.type);
     }
     return resultNode;
 }

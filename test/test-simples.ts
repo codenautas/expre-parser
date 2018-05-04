@@ -41,7 +41,7 @@ describe("expre-parser", function () {
         it("parse one variable", async function () {
             let obtained = ExpresionParser.parse("t.c") as EPModel.IdentifierNode;
             let expectedParsed = new EPModel.IdentifierNode({ type: 'identifier', name: "t.c" });
-            let expectedJsonObj = <EPModel.IdentifierNode>{ type: 'identifier', mainContent: 't.c' }
+            let expectedJsonObj = <EPModel.IdentifierNode>{ type: 'identifier', mainContent: 't.c', alias: 't'}
             compare(obtained, expectedJsonObj, { duckTyping: true });
             compare(obtained, expectedParsed);
             obtained = expectedParsed; //assignation to TS type check   
@@ -114,14 +114,14 @@ describe("expre-parser", function () {
             let expected = "f(var(t.field), 33, 'aa', var(b), '99')"
             compare(obtained, expected);
         });
-        it.skip('wrap simple division', function () {
+        it('wrap simple division', function () {
             let obtained = compiler.toCode(ExpresionParser.parse("7/4"), 'pk1,t2');
             let expected = "div(7, 4, pk1,t2)"
             compare(obtained, expected);
         });
-        it.skip('wrap division', function () {
+        it('wrap division', function () {
             let obtained = compiler.toCode(ExpresionParser.parse("a/4 > 3 AND t.field/b = 8 OR 3/0 = 1 AND 0/4 < 2"), 'pk1');
-            let expected = "div(var(a), 4) > 3 and div(var(t.field), var(b), pk1) = 8 or div(3, 0, pk1) = 1 and div(0, 4, pk1) < 2"
+            let expected = "div(var(a), 4, pk1) > 3 and div(var(t.field), var(b), pk1) = 8 or div(3, 0, pk1) = 1 and div(0, 4, pk1) < 2"
             compare(obtained, expected);
         });
     });
@@ -185,7 +185,7 @@ describe("expre-parser", function () {
             let expected = "case when vx(a) then 32 else 33 end";
             compare(obtained, expected);
         });
-        it.skip("parse case when else end", async function () {
+        it("parse case when not else end", async function () {
             compilerOptions.language = 'js'
             compiler = new Compiler(compilerOptions);
             let obtainedTree = ExpresionParser.parse("case when a then 32 end");
@@ -205,17 +205,21 @@ describe("expre-parser", function () {
             compare(obtained, expected);
         });
     });
-    describe("get used variables and functions", function () {
-        let expression = "fun(a,parse('hello'),3,OTRA_VAR) + 3 * t.c - max(a,min(22,3),o.u) or true";
-        let node = ExpresionParser.parse(expression);
+    describe("get used variables, aliases and functions", function () {
+        let expression = "fun(tab.a,parse('hello'),3,OTRA_VAR) + 3 * t.c - max(a,min(22,3),o.u) or true";
+        let insumos = ExpresionParser.parse(expression).getInsumos();
         it('get variables', function () {
-            let obtainedVars: string[] = node.getInsumos().variables.sort();
-            let expectedVars = ['a', 'o.u', 'otra_var', 't.c']; //sorted
+            let obtainedVars: string[] = insumos.variables.sort();
+            let expectedVars = ['a', 'o.u', 'otra_var', 't.c', 'tab.a']; //sorted
             discrepances.showAndThrow(obtainedVars, expectedVars);
         });
+        it('get aliases', function () {
+            let obtainedFunctions: string[] = insumos.aliases.sort();
+            let expectedFunctions = ['o', 't', 'tab'];
+            discrepances.showAndThrow(obtainedFunctions, expectedFunctions);
+        });
         it('get functions', function () {
-            let node = ExpresionParser.parse(expression);
-            let obtainedFunctions: string[] = node.getInsumos().funciones.sort();
+            let obtainedFunctions: string[] = insumos.funciones.sort();
             let expectedFunctions = ['fun', 'max', 'min', 'parse'];
             discrepances.showAndThrow(obtainedFunctions, expectedFunctions);
         });
