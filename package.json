@@ -1,7 +1,7 @@
 {
   "name": "expre-parser",
-  "description": "expresion parser",
-  "version": "0.1.8",
+  "description": "expression parser",
+  "version": "0.1.9",
   "author": "Codenautas <codenautas@googlegroups.com>",
   "license": "MIT",
   "main": "lib/src/expre-parser.js",

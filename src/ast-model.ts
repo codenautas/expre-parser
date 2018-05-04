@@ -7,7 +7,11 @@ import * as sqliteParser from "sqlite-parser";
 import * as ExpresionParser from "./expre-parser";
 import { Compiler } from "./compiler";
 
-
+export interface Insumos{
+     variables: string[]
+     aliases: string[]
+     funciones: string[] 
+}
 
 export abstract class BaseNode {
     constructor(public type: string, public mainContent: string) {
@@ -19,7 +23,7 @@ export abstract class BaseNode {
     abstract getVariables(): string[]
     abstract getAliases(): string[]
 
-    getInsumos(): { variables: string[], aliases: string[], funciones: string[] } {
+    getInsumos(): Insumos {
         // Using Set to remove duplicates
         return {
             variables: Array.from(new Set(
