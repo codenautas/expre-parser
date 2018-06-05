@@ -7,7 +7,7 @@ import { BaseNode, LiteralNode, IdentifierNode, FunctionExpressionNode, BinaryEx
 export * from './ast-model';
 export * from './compiler';
 
-export function parse(expression: string): BaseNode {
+export function parse(expression: string|number): BaseNode {
     // sqliteParser works in expressions with "select" string at begining
     let ast: ParsedObject = sqliteParser('select ' + expression);
     var astStatement: SPBaseNode = ast.statement[0].result[0];

@@ -22,7 +22,7 @@ function compare<T>(obtained: T, expected: T, opts?: object) {
 describe("expre-parser", function () {
     describe("parser", function () {
         it("parse one number", async function () {
-            let obtained = ExpresionParser.parse("43") as EPModel.LiteralNode;
+            let obtained = ExpresionParser.parse(43) as EPModel.LiteralNode;
             let expectedParsed = new EPModel.LiteralNode(<sqliteParser.LiteralNode>{ type: 'literal', value: "43", variant: 'decimal' })
             // es llamado `jsonObj` en lugar de `LiteralObj` u `objLiteral` para no confundir el `literal` de objetos JS con nuestro LiteralNode de AST
             let expectedJsonObj = <EPModel.LiteralNode>{ type: 'literal', dataType: 'decimal', mainContent: "43" };
