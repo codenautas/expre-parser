@@ -14,10 +14,10 @@
     "sqlite-parser": "~1.0.1"
   },
   "devDependencies": {
-    "types.d.ts": "~0.1.16",
-    "@types/node": "~10.0.3",
-    "@types/mocha": "~5.2.0",
-    "mocha": "~5.1.1",
+    "types.d.ts": "~0.1.25",
+    "@types/node": "~10.3.1",
+    "@types/mocha": "~5.2.1",
+    "mocha": "~5.2.0",
     "discrepances": "~0.2.2"
   },
   "engines": {
