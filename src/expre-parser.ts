@@ -1,5 +1,5 @@
 import * as sqliteParser from "sqlite-parser";
-import { ParsedObject, BaseNode as SPBaseNode, IdentifierNode as SPIdentifierNode } from "sqlite-parser";
+import { BaseNode as SPBaseNode, IdentifierNode as SPIdentifierNode } from "sqlite-parser";
 
 import { BaseNode, LiteralNode, IdentifierNode, FunctionExpressionNode, BinaryExpressionNode, UnaryExpressionNode, CaseExpressionNode, WhenThenCaseNode, ElseCaseNode } from "./ast-model";
 
@@ -7,12 +7,18 @@ import { BaseNode, LiteralNode, IdentifierNode, FunctionExpressionNode, BinaryEx
 export * from './ast-model';
 export * from './compiler';
 
-export function parse(expression: string|number): BaseNode {
+export function sqlite_parse(expression: string|number){
     // sqliteParser works in expressions with "select" string at begining
-    let ast: ParsedObject = sqliteParser('select ' + expression);
-    var astStatement: SPBaseNode = ast.statement[0].result[0];
-    let node = convertNode(astStatement);
-    return node;
+    try {
+        return sqliteParser('select ' + expression).statement[0].result[0];;
+    } catch (err){
+        throw new Error('La expresion '+expression+' no es válida'); // sintaxis inválida para sqlite-parser
+    }
+}
+
+export function parse(expression: string|number): BaseNode {
+    let ast: sqliteParser.BaseNode = sqlite_parse(expression);
+    return convertNode(ast);
 }
 
 export function convertNode(ast: SPBaseNode): BaseNode {

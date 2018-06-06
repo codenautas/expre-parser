@@ -99,6 +99,32 @@ describe("expre-parser", function () {
             // obtained = expectedParsed; //assignation to TS type check   
         });
     });
+    describe("protesta la librería sqlite_parse con SQL inválidos, por ej: delete, drop, etc", function () {
+        it("cualquier cosa", async function () {
+            ['&','pe#p','delete','@','FROM','!', '==','%', 'drop', 'if ('].forEach(invalExp => {
+                try {
+                    ExpresionParser.sqlite_parse(invalExp) as EPModel.LiteralNode;
+                    throw new Error('Tenía que dar error, porque la expresion "'+invalExp+'" es sintaxis inválida');
+                } catch(err){
+                    discrepances.showAndThrow(err.message, 'La expresion '+invalExp+' no es válida');
+                }
+            })
+        });
+    });
+    describe("protesta convertNode() porque el usario escribio SQL válido para sqlite-parser que no consideramos válido, por ej: ?, etc ", function () {
+        it("cualquier cosa", async function () {
+            ['?'].forEach(invalExp => {
+                let ast:sqliteParser.BaseNode;
+                try {
+                    ast = ExpresionParser.sqlite_parse(invalExp);
+                    ExpresionParser.convertNode(ast);
+                    throw new Error('Tenía que dar error porque la expresion "'+invalExp+'" es no la queremos');
+                } catch(err){
+                    discrepances.showAndThrow(err.message, 'ast.type not consider: '+ ast.type);
+                }
+            })
+        });
+    });
     describe("wrapped", function () {
         var compilerOptions: CompilerOptions = {
             varWrapper: 'var',
