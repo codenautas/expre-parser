@@ -1,7 +1,7 @@
 {
   "name": "expre-parser",
   "description": "expression parser",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "author": "Codenautas <codenautas@googlegroups.com>",
   "license": "MIT",
   "main": "lib/src/expre-parser.js",
@@ -14,9 +14,8 @@
     "sqlite-parser": "~1.0.1"
   },
   "devDependencies": {
-    "types.d.ts": "~0.1.25",
-    "@types/node": "~10.3.1",
-    "@types/mocha": "~5.2.1",
+    "types.d.ts": "~0.1.29",
+    "@types/mocha": "~5.2.3",
     "mocha": "~5.2.0",
     "discrepances": "~0.2.2"
   },
