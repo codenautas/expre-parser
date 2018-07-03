@@ -7,10 +7,14 @@ import { BaseNode, LiteralNode, IdentifierNode, FunctionExpressionNode, BinaryEx
 export * from './ast-model';
 export * from './compiler';
 
+function prepareToSqliteParser(exp: string|number){
+    return 'select ' + exp.toString().replace(/::text/g,'');
+}
+
 export function sqlite_parse(expression: string|number){
     // sqliteParser works in expressions with "select" string at begining
     try {
-        return sqliteParser('select ' + expression).statement[0].result[0];;
+        return sqliteParser(prepareToSqliteParser(expression)).statement[0].result[0];;
     } catch (err){
         throw new Error('La expresion '+expression+' no es válida'); // sintaxis inválida para sqlite-parser
     }
