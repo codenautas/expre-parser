@@ -142,12 +142,12 @@ describe("expre-parser", function () {
         });
         it('wrap simple division', function () {
             let obtained = compiler.toCode(ExpresionParser.parse("7/4"), 'pk1,t2');
-            let expected = "div(7, 4, pk1,t2)"
+            let expected = "div(7, 4, pk1::text,t2::text)"
             compare(obtained, expected);
         });
         it('wrap division', function () {
             let obtained = compiler.toCode(ExpresionParser.parse("a/4 > 3 AND t.field/b = 8 OR 3/0 = 1 AND 0/4 < 2"), 'pk1');
-            let expected = "div(var(a), 4, pk1) > 3 and div(var(t.field), var(b), pk1) = 8 or div(3, 0, pk1) = 1 and div(0, 4, pk1) < 2"
+            let expected = "div(var(a), 4, pk1::text) > 3 and div(var(t.field), var(b), pk1::text) = 8 or div(3, 0, pk1::text) = 1 and div(0, 4, pk1::text) < 2"
             compare(obtained, expected);
         });
     });
@@ -227,7 +227,7 @@ describe("expre-parser", function () {
             }
             compare(obtainedTree, expectedTree, { duckTyping: true });
             let obtained = compiler.toCode(obtainedTree, 'pk1,pk2');
-            let expected = "case when vx(a) then 32 else without_else(pk1,pk2) end";
+            let expected = "case when vx(a) then 32 else without_else(pk1::text,pk2::text) end";
             compare(obtained, expected);
         });
     });
