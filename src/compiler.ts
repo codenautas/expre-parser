@@ -28,7 +28,7 @@ export class Compiler implements CompilerMethods {
          de postgres que reciben la lista de pks, cuando esa lista es heterogenea (pks de distintos tipos)
          "operativo, id_caso, id_0"  ->  "operativo::text,id_caso::text,id_0::text"
          */
-        this.pkExpression = pkExpression.split(',').map(pk=>pk.trim()+'::text').join(','); 
+        this.pkExpression = pkExpression? pkExpression.split(',').map(pk=>pk.trim()+'::text').join(','): ''; 
         return node.toCode(this);
     }
     functionToCode(funcNode: FunctionExpressionNode): string {
