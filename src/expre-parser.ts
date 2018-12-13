@@ -16,7 +16,7 @@ export function sqlite_parse(expression: string|number){
     try {
         return sqliteParser(prepareToSqliteParser(expression)).statement[0].result[0];;
     } catch (err){
-        throw new Error('La expresion "'+expression+'" no es válida'); // sintaxis inválida para sqlite-parser
+        throw new Error('La expresion "'+expression+'" no es valida'); // sintaxis inválida para sqlite-parser
     }
 }
 

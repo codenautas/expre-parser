@@ -29,29 +29,31 @@ export class Compiler implements CompilerMethods {
          "operativo, id_caso, id_0"  ->  "operativo::text,id_caso::text,id_0::text"
          */
         this.pkExpression = pkExpression? pkExpression.split(',').map(pk=>pk.trim()+'::text').join(','): ''; 
-        return node.toCode(this);
+        return node.toCodeWiP(this,this);
     }
+
     functionToCode(funcNode: FunctionExpressionNode): string {
-        return this.baseToCode(funcNode) + '(' + funcNode.children.map(child => child.toCode(this)).join(', ') + ')';
+        return this.baseToCode(funcNode) + '(' + funcNode.children.map(child => child.toCodeWiP(this,funcNode)).join(', ') + ')';
     }
 
     unaryToCode(unaryNode: UnaryExpressionNode): string {
-        return this.getOperator(this.baseToCode(unaryNode)) + ' ' + unaryNode.children[0].toCode(this)
+        return this.getOperator(this.baseToCode(unaryNode)) + ' ' + unaryNode.children[0].toCodeWiP(this,unaryNode)
     }
 
     binaryToCode(binNode: BinaryExpressionNode): string {
-        let left = binNode.children[0].toCode(this);
-        let right = binNode.children[1].toCode(this)
+        let left = binNode.children[0].toCodeWiP(this, binNode);
+        let right = binNode.children[1].toCodeWiP(this, binNode, true)
         if (binNode.mainContent == '/' && this.options.divWrapper) {
             return `${this.options.divWrapper}(${left}, ${right}`+ (this.pkExpression? ', '+this.pkExpression:'') + ')' ;
             // return this.options.divWrapper + '(' + left + ',' + right + ')';
         } else {
-            return left + ' ' + this.getOperator(this.baseToCode(binNode)) + ' ' + right
+            return left + ' ' + this.getOperator(this.baseToCode(binNode)) + ' ' + right;
+            // return '(' + left + ' ' + this.getOperator(this.baseToCode(binNode)) + ' ' + right +')';
         }
     }
 
     caseToCode(caseNode:CaseExpressionNode): string {
-        return 'case'+caseNode.children.map(node=>node.toCode(this)).join('')+
+        return 'case'+caseNode.children.map(node=>node.toCodeWiP(this,caseNode)).join('')+
             (caseNode.children.length && caseNode.children[caseNode.children.length-1].type!='else-case'?
                 ` else ${this.options.elseWrapper}(${this.pkExpression})`
             :'')+
@@ -59,12 +61,12 @@ export class Compiler implements CompilerMethods {
     }
 
     whenThenCaseToCode(caseNode:WhenThenCaseNode): string {
-        return ' when '+caseNode.children[0].toCode(this)+
-               ' then '+caseNode.children[1].toCode(this);
+        return ' when '+caseNode.children[0].toCodeWiP(this, caseNode)+
+               ' then '+caseNode.children[1].toCodeWiP(this, caseNode);
     }
 
     elseCaseToCode(caseNode:ElseCaseNode): string {
-        return ' else '+caseNode.children[0].toCode(this);
+        return ' else '+caseNode.children[0].toCodeWiP(this,caseNode);
     }
 
     getOperator(operator: string): string {

@@ -106,7 +106,7 @@ describe("expre-parser", function () {
                     ExpresionParser.sqlite_parse(invalExp) as EPModel.LiteralNode;
                     throw new Error('Tenía que dar error, porque la expresion "'+invalExp+'" es sintaxis inválida');
                 } catch(err){
-                    discrepances.showAndThrow(err.message, 'La expresion '+invalExp+' no es válida');
+                    discrepances.showAndThrow(err.message, 'La expresion '+JSON.stringify(invalExp)+' no es valida');
                 }
             })
         });
@@ -169,6 +169,26 @@ describe("expre-parser", function () {
             compiler = new Compiler(compilerOptions);
             let obtained = compiler.toCode(ExpresionParser.parse("(a+b)>c AND b is null OR not t.c"), 'pk2');
             let expected = "a + b > c && b == null || ! t.c"
+            compare(obtained, expected);
+        });
+        it('parenthesis expression toCode', function () {
+            compiler = new Compiler(compilerOptions);
+            let obtained = compiler.toCode(ExpresionParser.parse("(a*(b+c)) / (d-(e-g))"), 'pk1');
+            let expected = "a * (b + c) / (d - (e - g))"
+            compare(obtained, expected);
+        });
+        it('other parenthesis expression toCode', function () {
+            compilerOptions.language = 'sql'
+            compiler = new Compiler(compilerOptions);
+            let obtained = compiler.toCode(ExpresionParser.parse("((a and d) and not (b or not c)) = (a <= 2)"), 'pk1');
+            let expected = "(a and d and not (b or not c)) = (a <= 2)"
+            compare(obtained, expected);
+        });
+        it("parse is not and <>", async function () {
+            compilerOptions.language = 'sql'
+            compiler = new Compiler(compilerOptions);
+            let obtained = compiler.toCode(ExpresionParser.parse("b is not null and b <> 3"), 'pk2');
+            let expected = "b is not null and b <> 3"
             compare(obtained, expected);
         });
         it("parse is not and <>", async function () {
