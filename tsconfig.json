@@ -10,6 +10,7 @@
         "lib": [ "es7" , "dom"],
         "typeRoots" : ["./node_modules/@types","./node_modules/types.d.ts/modules"],
         "noImplicitAny": true,
+        "strict": true,
         "alwaysStrict": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,

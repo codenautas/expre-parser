@@ -7,6 +7,8 @@ import * as sqliteParser from "sqlite-parser";
 import * as ExpresionParser from "./expre-parser";
 import { Compiler } from "./compiler";
 
+export var strictOperatorControl=true;
+
 export interface Insumos{
      variables: string[]
      aliases: string[]
@@ -15,6 +17,9 @@ export interface Insumos{
 
 export var DEFAULT_PRECEDENCE=90;
 export var OUTER_PRECEDENCE=99999999;
+
+// https://www.sqlite.org/lang_expr.html#binaryops
+// https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-PRECEDENCE
 
 export var unaryPrecedences:{[key:string]:{precedence:number}}={
     '+':{precedence:120},
@@ -29,31 +34,32 @@ export var unaryPrecedences:{[key:string]:{precedence:number}}={
     'is not':{precedence:350},
 }
 
-export var precedences:{[key:string]:{precedence:number, notCommutative?:true, comparator?:true}}={
+export var precedences:{[key:string]:{precedence:number, associative?:true, comparator?:true}}={
     '.'  :{precedence:100},
     '::' :{precedence:110},
+    '||' :{precedence:120, associative:true},
     '^':{precedence:130},
-    '*':{precedence:140},
-    '/':{precedence:140, notCommutative:true},
+    '*':{precedence:140, associative:true},
+    '/':{precedence:140},
     '%':{precedence:140},
-    '+':{precedence:150},
-    '-':{precedence:150, notCommutative:true},
+    '+':{precedence:150, associative:true},
+    '-':{precedence:150},
     between:{precedence:200},
     in:{precedence:200},
     like:{precedence:200},
     ilike:{precedence:200},
     similar:{precedence:200},
-    '<':{precedence:300, comparator:true},
-    '>':{precedence:300, comparator:true},
-    '<=':{precedence:300, comparator:true},
-    '>=':{precedence:300, comparator:true},
-    '<>':{precedence:300, comparator:true},
-    '=':{precedence:300, comparator:true},
+    '<':{precedence:300},
+    '>':{precedence:300},
+    '<=':{precedence:300},
+    '>=':{precedence:300},
+    '<>':{precedence:300},
+    '=':{precedence:300},
     is:{precedence:350},
     'is not':{precedence:350},
     'is distinct from':{precedence:350},
-    'and':{precedence:370},
-    'or':{precedence:380},
+    'and':{precedence:370, associative:true},
+    'or':{precedence:380, associative:true},
 }
 
 
@@ -69,14 +75,13 @@ export abstract class BaseNode {
             return result;
         }
         if(invokerNode.precedence<this.precedence 
-           || invokerNode.precedence==this.precedence && (invokerNode.isComparation || binaryRight && invokerNode.notCommutative)
+           || invokerNode.precedence==this.precedence && (binaryRight && !invokerNode.associative)
         ){
             result='('+result+')';
         }
         return result;
     }
-    get notCommutative(): boolean{ return false; }
-    get isComparation(): boolean{ return false; }
+    get associative(): boolean{ return false; }
     abstract get precedence(): number
     abstract getFunciones(): string[]
     abstract getVariables(): string[]
@@ -170,16 +175,19 @@ export class BinaryExpressionNode extends ExpressionNode {
     get precedence(){
         if(!precedences[this.mainContent]){
             console.log("invalid operator "+JSON.stringify(this.mainContent));
-            return 0;
-            throw new Error("invalid operator "+JSON.stringify(this.mainContent))
+            if(strictOperatorControl){
+                throw new Error("invalid operator "+JSON.stringify(this.mainContent))
+            }else{
+                return DEFAULT_PRECEDENCE;
+            }
         }
         return precedences[this.mainContent].precedence;
     }
-    get notCommutative(): boolean{
-        return precedences[this.mainContent].notCommutative;
+    get associative(): boolean{
+        return !!precedences[this.mainContent].associative;
     };
     get isComparation(): boolean{
-        return precedences[this.mainContent].comparator;
+        return !!precedences[this.mainContent].comparator;
     };
     toCodeWoP(c: Compiler): string {
         return c.binaryToCode(this)
@@ -192,8 +200,11 @@ export class UnaryExpressionNode extends ExpressionNode {
     get precedence(){
         if(!unaryPrecedences[this.mainContent]){
             console.log("invalid unary operator "+JSON.stringify(this.mainContent))
-            return 0;
-            throw new Error("invalid unary operator "+JSON.stringify(this.mainContent))
+            if(strictOperatorControl){
+                throw new Error("invalid unary operator "+JSON.stringify(this.mainContent))
+            }else{
+                return DEFAULT_PRECEDENCE;
+            }
         }
         return unaryPrecedences[this.mainContent].precedence;
     }
