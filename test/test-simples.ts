@@ -151,6 +151,42 @@ describe("expre-parser", function () {
             compare(obtained, expected);
         });
     });
+    describe("parse() then toCode() respect precedence order", function () {
+        var compilerOptions: CompilerOptions = {
+            varWrapper: null,
+            divWrapper: null,
+            language: 'sql'
+        }
+        var compiler: Compiler;
+        before(function () {
+            compiler = new Compiler(compilerOptions);
+        });
+        it('dont add unuseful parenthesis', function () {
+            let obtained = compiler.toCode(ExpresionParser.parse("a and not b or c or d and e"), 'pk1,t2');
+            let expected = "a and not b or c or d and e"
+            compare(obtained, expected);
+        });
+        it('dont lose parenthesis 2', function () {
+            let obtained = compiler.toCode(ExpresionParser.parse("a and not (b or c) or d and e"), 'pk1,t2');
+            let expected = "a and not (b or c) or d and e"
+            compare(obtained, expected);
+        });
+        it('dont lose parenthesis 3', function () {
+            let obtained = compiler.toCode(ExpresionParser.parse("a and not ((b or c) or d) and e"), 'pk1,t2');
+            let expected = "a and not (b or c or d) and e"
+            compare(obtained, expected);
+        });
+        it('dont lose parenthesis 4', function () {
+            let obtained = compiler.toCode(ExpresionParser.parse("a and (not (b or c) or d) and e"), 'pk1,t2');
+            let expected = "a and (not (b or c) or d) and e"
+            compare(obtained, expected);
+        });
+        it('dont lose parenthesis 5', function () {
+            let obtained = compiler.toCode(ExpresionParser.parse("a and (not (b or c) or d and e)"), 'pk1,t2');
+            let expected = "a and (not (b or c) or d and e)"
+            compare(obtained, expected);
+        });
+    });
     describe("non wrapped", function () {
         var compilerOptions: CompilerOptions = {
             varWrapper: null,
