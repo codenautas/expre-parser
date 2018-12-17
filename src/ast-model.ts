@@ -66,12 +66,11 @@ export var precedences:{[key:string]:{precedence:number, associative?:true, comp
 export abstract class BaseNode {
     constructor(public type: string, public mainContent: string) {
     }
-
     //must be overriden in concrete subclasses 
     abstract toCodeWoP(c: Compiler): string
     toCodeWiP(c: Compiler, invokerNode:BaseNode|Compiler, binaryRight?:true): string{
         var result=this.toCodeWoP(c);
-        if(invokerNode instanceof Compiler){
+        if(invokerNode instanceof Compiler || !this.mayNeedParentheses){
             return result;
         }
         if(invokerNode.precedence<this.precedence 
@@ -82,6 +81,7 @@ export abstract class BaseNode {
         return result;
     }
     get associative(): boolean{ return false; }
+    get mayNeedParentheses(): boolean { return true; }
     abstract get precedence(): number
     abstract getFunciones(): string[]
     abstract getVariables(): string[]
@@ -107,6 +107,7 @@ export abstract class leafNode extends BaseNode {
     getFunciones(): string[] {
         return [];
     }
+    get mayNeedParentheses(): boolean { return false; }
 }
 
 export class IdentifierNode extends leafNode {
@@ -222,6 +223,7 @@ export class FunctionExpressionNode extends ExpressionNode {
     toCodeWoP(c: Compiler): string {
         return c.functionToCode(this)
     }
+    get mayNeedParentheses(): boolean { return false; }
     getFunciones(): string[] {
         return [this.mainContent].concat(...super.getFunciones());
     }
@@ -236,6 +238,7 @@ export class CaseExpressionNode extends ExpressionNode {
     toCodeWoP(c: Compiler): string {
         return c.caseToCode(this)
     }
+    get mayNeedParentheses(): boolean { return false; }
 }
 export class WhenThenCaseNode extends ExpressionNode {
     constructor(ast:any) {
@@ -247,6 +250,7 @@ export class WhenThenCaseNode extends ExpressionNode {
     toCodeWoP(c: Compiler): string {
         return c.whenThenCaseToCode(this)
     }
+    get mayNeedParentheses(): boolean { return false; }
 }
 export class ElseCaseNode extends ExpressionNode {
     constructor(ast:any) {
@@ -258,4 +262,5 @@ export class ElseCaseNode extends ExpressionNode {
     toCodeWoP(c: Compiler): string {
         return c.elseCaseToCode(this)
     }
+    get mayNeedParentheses(): boolean { return false; }
 }

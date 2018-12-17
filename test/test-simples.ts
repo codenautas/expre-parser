@@ -198,6 +198,14 @@ describe("expre-parser", function () {
             let expected = "b != null && b != 3"
             compare(obtained, expected);
         });
+        it("inside functions", async function () {
+            var expr="f(g(x))+abs(a-1) = f(y) or tiene_permiso('pepe')"
+            compilerOptions.language = 'sql'
+            compiler = new Compiler(compilerOptions);
+            let obtained = compiler.toCode(ExpresionParser.parse(expr), 'pk2');
+            let expected = "f(g(x)) + abs(a - 1) = f(y) or tiene_permiso('pepe')"
+            compare(obtained, expected);
+        });
     });
     describe("case", function () {
         var compilerOptions: CompilerOptions = {
