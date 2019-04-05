@@ -18,12 +18,12 @@ export interface CompilerMethods {
 }
 
 export class Compiler implements CompilerMethods {
-    protected pkExpression: string; // pk1::text, pk2::text, pk3::text
+    protected pkExpression?: string; // pk1::text, pk2::text, pk3::text
 
     constructor(public options: CompilerOptions) {
     }
 
-    toCode(node: BaseNode, pkExpression: string): string {
+    toCode(node: BaseNode, pkExpression?: string): string {
         /*le agrega a las pks separadas por coma el sufijo ::text para que funcione las funciones
          de postgres que reciben la lista de pks, cuando esa lista es heterogenea (pks de distintos tipos)
          "operativo, id_caso, id_0"  ->  "operativo::text,id_caso::text,id_0::text"
