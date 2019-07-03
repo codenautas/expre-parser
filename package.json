@@ -3,6 +3,7 @@
   "description": "expression parser",
   "version": "0.1.22",
   "author": "Codenautas <codenautas@googlegroups.com>",
+  "contributors": ["Raquel N Salva <raquelzssalva@gmail.com>, Eugenio Arosteguy <eugenio.arosteguy@gmail.com>, Emilio Platzer <emilioplatzer@gmail.com>"],
   "license": "MIT",
   "main": "lib/src/expre-parser.js",
   "types": "lib/src/expre-parser.d.ts",
