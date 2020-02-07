@@ -8,7 +8,7 @@ export interface CompilerOptions {
 }
 
 export interface CompilerMethods {
-    toCode(node: BaseNode, pkExpression: string): string
+    toCode(node: BaseNode, pkExpression?: string[]): string
     unaryToCode(unaryNode: UnaryExpressionNode): string
     binaryToCode(binNode: BinaryExpressionNode): string
     literalToCode(litNode: LiteralNode): string
@@ -23,12 +23,12 @@ export class Compiler implements CompilerMethods {
     constructor(public options: CompilerOptions) {
     }
 
-    toCode(node: BaseNode, pkExpression?: string): string {
+    toCode(node: BaseNode, pkExpression?: string[]): string {
         /*le agrega a las pks separadas por coma el sufijo ::text para que funcione las funciones
          de postgres que reciben la lista de pks, cuando esa lista es heterogenea (pks de distintos tipos)
          "operativo, id_caso, id_0"  ->  "operativo::text,id_caso::text,id_0::text"
          */
-        this.pkExpression = pkExpression? pkExpression.split(',').map(pk=>pk.trim()+'::text').join(','): ''; 
+        this.pkExpression = pkExpression? pkExpression.map(pk=>pk.trim()+'::text').join(','): ''; 
         return node.toCodeWiP(this,this);
     }
 

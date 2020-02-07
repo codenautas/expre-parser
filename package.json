@@ -3,13 +3,14 @@
   "description": "expression parser",
   "version": "0.1.22",
   "author": "Codenautas <codenautas@googlegroups.com>",
-  "contributors": ["Raquel N Salva <raquelzssalva@gmail.com>, Eugenio Arosteguy <eugenio.arosteguy@gmail.com>, Emilio Platzer <emilioplatzer@gmail.com>"],
+  "contributors": [
+    "Raquel N Salva <raquelzssalva@gmail.com>, Eugenio Arosteguy <eugenio.arosteguy@gmail.com>, Emilio Platzer <emilioplatzer@gmail.com>"
+  ],
   "license": "MIT",
-  "main": "lib/src/expre-parser.js",
-  "types": "lib/src/expre-parser.d.ts",
+  "main": "dist/expre-parser.js",
+  "types": "dist/expre-parser.d.ts",
   "files": [
-    "lib",
-    "src/client"
+    "dist"
   ],
   "dependencies": {
     "sqlite-parser": "~1.0.1"
@@ -17,13 +18,21 @@
   "devDependencies": {
     "@types/mocha": "~5.2.5",
     "mocha": "~5.2.0",
-    "discrepances": "~0.2.4"
+    "discrepances": "~0.2.4",
+    "mixin-patch": "~0.3.3"
   },
   "engines": {
     "node": ">= 8.0.0"
   },
   "scripts": {
-    "prepublish": "tsc || echo \"continue w/error\"",
+    "prepare": "npm run build",
+    "build-strict": "tsc -p tsconfig-server.json && mixin-patch",
+    "build": "(tsc -p tsconfig-server.json  || echo \"continue w/error\") && mixin-patch",
+    "watch:buildS": "(tsc -p tsconfig-server.json --watch || echo \"continue w/error\")",
+    "start": "node dist/server/expre-parser.js",
+    "clink": "npm prune && npm i && npm run build && npm link varcal && npm run build",
+    "git-commit": "git add package.json && (git commit -m \"upgrading stack dependencies\" || true)",
+    "publish-stack": "npm version patch && ncu -u && npm run git-commit && npm publish && git push",
     "x-test": "tsc || echo \"continue with errors\" && mocha --reporter spec --bail --check-leaks lib\\test\\*.js",
     "test": "(tsc || echo \"continue with errors\") && mocha --reporter spec --bail --check-leaks lib/test/*.js",
     "test-cov": "istanbul cover node_modules/mocha/bin/_mocha -- --reporter dot --check-leaks test/"
