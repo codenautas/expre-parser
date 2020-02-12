@@ -16,8 +16,8 @@
     "sqlite-parser": "~1.0.1"
   },
   "devDependencies": {
-    "@types/mocha": "~5.2.5",
-    "mocha": "~5.2.0",
+    "@types/mocha": "~7.0.1",
+    "mocha": "~7.0.1",
     "discrepances": "~0.2.4",
     "mixin-patch": "~0.3.3"
   },
