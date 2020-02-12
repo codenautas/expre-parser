@@ -1,7 +1,7 @@
 {
   "name": "expre-parser",
   "description": "expression parser",
-  "version": "0.1.23",
+  "version": "0.1.24",
   "author": "Codenautas <codenautas@googlegroups.com>",
   "contributors": [
     "Raquel N Salva <raquelzssalva@gmail.com>, Eugenio Arosteguy <eugenio.arosteguy@gmail.com>, Emilio Platzer <emilioplatzer@gmail.com>"
@@ -32,7 +32,7 @@
     "start": "node dist/server/expre-parser.js",
     "clink": "npm prune && npm i && npm run build && npm link varcal && npm run build",
     "git-commit": "git add package.json && (git commit -m \"upgrading stack dependencies\" || true)",
-    "publish-stack": "npm version patch && ncu -u && npm run git-commit && npm publish && git push",
+    "push-publish": "npm version patch && ncu -u && npm run git-commit && npm publish && git push",
     "x-test": "tsc || echo \"continue with errors\" && mocha --reporter spec --bail --check-leaks lib\\test\\*.js",
     "test": "(tsc || echo \"continue with errors\") && mocha --reporter spec --bail --check-leaks lib/test/*.js",
     "test-cov": "istanbul cover node_modules/mocha/bin/_mocha -- --reporter dot --check-leaks test/"
