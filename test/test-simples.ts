@@ -115,8 +115,8 @@ describe("expre-parser", function () {
         it("cualquier cosa", async function () {
             ['?'].forEach(invalExp => {
                 let ast:sqliteParser.BaseNode;
+                ast = ExpresionParser.sqlite_parse(invalExp);
                 try {
-                    ast = ExpresionParser.sqlite_parse(invalExp);
                     ExpresionParser.convertNode(ast);
                     throw new Error('Tenía que dar error porque la expresion "'+invalExp+'" es no la queremos');
                 } catch(err){
@@ -136,17 +136,17 @@ describe("expre-parser", function () {
             compiler = new Compiler(compilerOptions);
         });
         it('wrap varname', function () {
-            let obtained = compiler.toCode(ExpresionParser.parse("f(t.field, 33, 'aa', b, '99')"), 'pk1,t2');
+            let obtained = compiler.toCode(ExpresionParser.parse("f(t.field, 33, 'aa', b, '99')"), 'pk1,t2'.split(','));
             let expected = "f(var(t.field), 33, 'aa', var(b), '99')"
             compare(obtained, expected);
         });
         it('wrap simple division', function () {
-            let obtained = compiler.toCode(ExpresionParser.parse("7/4"), 'pk1,t2');
+            let obtained = compiler.toCode(ExpresionParser.parse("7/4"), 'pk1,t2'.split(','));
             let expected = "div(7, 4, pk1::text,t2::text)"
             compare(obtained, expected);
         });
         it('wrap division', function () {
-            let obtained = compiler.toCode(ExpresionParser.parse("a/4 > 3 AND t.field/b = 8 OR 3/0 = 1 AND 0/4 < 2"), 'pk1');
+            let obtained = compiler.toCode(ExpresionParser.parse("a/4 > 3 AND t.field/b = 8 OR 3/0 = 1 AND 0/4 < 2"), 'pk1'.split(','));
             let expected = "div(var(a), 4, pk1::text) > 3 and div(var(t.field), var(b), pk1::text) = 8 or div(3, 0, pk1::text) = 1 and div(0, 4, pk1::text) < 2"
             compare(obtained, expected);
         });
@@ -162,27 +162,27 @@ describe("expre-parser", function () {
             compiler = new Compiler(compilerOptions);
         });
         it('dont add unuseful parenthesis', function () {
-            let obtained = compiler.toCode(ExpresionParser.parse("a and not b or c or d and e"), 'pk1,t2');
+            let obtained = compiler.toCode(ExpresionParser.parse("a and not b or c or d and e"), 'pk1,t2'.split(','));
             let expected = "a and not b or c or d and e"
             compare(obtained, expected);
         });
         it('dont lose parenthesis 2', function () {
-            let obtained = compiler.toCode(ExpresionParser.parse("a and not (b or c) or d and e"), 'pk1,t2');
+            let obtained = compiler.toCode(ExpresionParser.parse("a and not (b or c) or d and e"), 'pk1,t2'.split(','));
             let expected = "a and not (b or c) or d and e"
             compare(obtained, expected);
         });
         it('dont lose parenthesis 3', function () {
-            let obtained = compiler.toCode(ExpresionParser.parse("a and not ((b or c) or d) and e"), 'pk1,t2');
+            let obtained = compiler.toCode(ExpresionParser.parse("a and not ((b or c) or d) and e"), 'pk1,t2'.split(','));
             let expected = "a and not (b or c or d) and e"
             compare(obtained, expected);
         });
         it('dont lose parenthesis 4', function () {
-            let obtained = compiler.toCode(ExpresionParser.parse("a and (not (b or c) or d) and e"), 'pk1,t2');
+            let obtained = compiler.toCode(ExpresionParser.parse("a and (not (b or c) or d) and e"), 'pk1,t2'.split(','));
             let expected = "a and (not (b or c) or d) and e"
             compare(obtained, expected);
         });
         it('dont lose parenthesis 5', function () {
-            let obtained = compiler.toCode(ExpresionParser.parse("a and (not (b or c) or d and e)"), 'pk1,t2');
+            let obtained = compiler.toCode(ExpresionParser.parse("a and (not (b or c) or d and e)"), 'pk1,t2'.split(','));
             let expected = "a and (not (b or c) or d and e)"
             compare(obtained, expected);
         });
@@ -196,41 +196,41 @@ describe("expre-parser", function () {
         var compiler: Compiler;
         it('simple expressions toCode', function () {
             compiler = new Compiler(compilerOptions);
-            let obtained = compiler.toCode(ExpresionParser.parse("a+b>c and b is null"), 'pk1');
+            let obtained = compiler.toCode(ExpresionParser.parse("a+b>c and b is null"), 'pk1'.split(','));
             let expected = "a + b > c and b is null"
             compare(obtained, expected);
         });
         it('simple expressions toJavascript', function () {
             compilerOptions.language = 'js'
             compiler = new Compiler(compilerOptions);
-            let obtained = compiler.toCode(ExpresionParser.parse("(a+b)>c AND b is null OR not t.c"), 'pk2');
+            let obtained = compiler.toCode(ExpresionParser.parse("(a+b)>c AND b is null OR not t.c"), 'pk2'.split(','));
             let expected = "a + b > c && b == null || ! t.c"
             compare(obtained, expected);
         });
         it('parenthesis expression toCode', function () {
             compiler = new Compiler(compilerOptions);
-            let obtained = compiler.toCode(ExpresionParser.parse("(a*(b+c)) / (d-(e-g))"), 'pk1');
+            let obtained = compiler.toCode(ExpresionParser.parse("(a*(b+c)) / (d-(e-g))"), 'pk1'.split(','));
             let expected = "a * (b + c) / (d - (e - g))"
             compare(obtained, expected);
         });
         it('other parenthesis expression toCode', function () {
             compilerOptions.language = 'sql'
             compiler = new Compiler(compilerOptions);
-            let obtained = compiler.toCode(ExpresionParser.parse("((a and d) and not (b or not c)) = (a <= 2)"), 'pk1');
+            let obtained = compiler.toCode(ExpresionParser.parse("((a and d) and not (b or not c)) = (a <= 2)"), 'pk1'.split(','));
             let expected = "(a and d and not (b or not c)) = (a <= 2)"
             compare(obtained, expected);
         });
         it("parse is not and <>", async function () {
             compilerOptions.language = 'sql'
             compiler = new Compiler(compilerOptions);
-            let obtained = compiler.toCode(ExpresionParser.parse("b is not null and b <> 3"), 'pk2');
+            let obtained = compiler.toCode(ExpresionParser.parse("b is not null and b <> 3"), 'pk2'.split(','));
             let expected = "b is not null and b <> 3"
             compare(obtained, expected);
         });
         it("parse is not and <>", async function () {
             compilerOptions.language = 'js'
             compiler = new Compiler(compilerOptions);
-            let obtained = compiler.toCode(ExpresionParser.parse("b is not null and b <> 3"), 'pk2');
+            let obtained = compiler.toCode(ExpresionParser.parse("b is not null and b <> 3"), 'pk2'.split(','));
             let expected = "b != null && b != 3"
             compare(obtained, expected);
         });
@@ -238,7 +238,7 @@ describe("expre-parser", function () {
             var expr="f(g(x))+abs(a-1) = f(y) or tiene_permiso('pepe')"
             compilerOptions.language = 'sql'
             compiler = new Compiler(compilerOptions);
-            let obtained = compiler.toCode(ExpresionParser.parse(expr), 'pk2');
+            let obtained = compiler.toCode(ExpresionParser.parse(expr), 'pk2'.split(','));
             let expected = "f(g(x)) + abs(a - 1) = f(y) or tiene_permiso('pepe')"
             compare(obtained, expected);
         });
@@ -271,7 +271,7 @@ describe("expre-parser", function () {
                 ]
             }
             compare(obtainedTree, expectedTree, { duckTyping: true });
-            let obtained = compiler.toCode(obtainedTree, 'pk2');
+            let obtained = compiler.toCode(obtainedTree, 'pk2'.split(','));
             let expected = "case when vx(a) then 32 else 33 end";
             compare(obtained, expected);
         });
@@ -290,7 +290,7 @@ describe("expre-parser", function () {
                 ]
             }
             compare(obtainedTree, expectedTree, { duckTyping: true });
-            let obtained = compiler.toCode(obtainedTree, 'pk1,pk2');
+            let obtained = compiler.toCode(obtainedTree, 'pk1,pk2'.split(','));
             let expected = "case when vx(a) then 32 else without_else(pk1::text,pk2::text) end";
             compare(obtained, expected);
         });

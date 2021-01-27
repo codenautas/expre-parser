@@ -16,8 +16,10 @@
     "sqlite-parser": "~1.0.1"
   },
   "devDependencies": {
+    "@types/node": "^14.14.22",
     "@types/mocha": "~7.0.1",
     "mocha": "~7.0.1",
+    "typescript": "^4.1.3",
     "discrepances": "~0.2.4",
     "mixin-patch": "~0.3.3"
   },
@@ -33,8 +35,8 @@
     "clink": "npm prune && npm i && npm run build && npm link varcal && npm run build",
     "git-commit": "git add package.json && (git commit -m \"upgrading stack dependencies\" || true)",
     "push-publish": "npm version patch && ncu -u && npm run git-commit && npm publish && git push",
-    "x-test": "tsc || echo \"continue with errors\" && mocha --reporter spec --bail --check-leaks lib\\test\\*.js",
-    "test": "(tsc || echo \"continue with errors\") && mocha --reporter spec --bail --check-leaks lib/test/*.js",
+    "test": "(tsc -p tsconfig-test.json || echo \"continue with errors\") && mocha --reporter spec --bail --check-leaks compile-for-test/test/*.js",
+    "test-strict": "tsc -p tsconfig-test.json && rem mocha --reporter spec --bail --check-leaks compile-for-test/test/*.js",
     "test-cov": "istanbul cover node_modules/mocha/bin/_mocha -- --reporter dot --check-leaks test/"
   },
   "qa-control": {

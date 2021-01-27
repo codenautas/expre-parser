@@ -1,4 +1,5 @@
 import * as sqliteParser from "sqlite-parser";
+
 import { BaseNode as SPBaseNode, IdentifierNode as SPIdentifierNode } from "sqlite-parser";
 
 import { BaseNode, LiteralNode, IdentifierNode, FunctionExpressionNode, BinaryExpressionNode, UnaryExpressionNode, CaseExpressionNode, WhenThenCaseNode, ElseCaseNode } from "./ast-model";
@@ -52,6 +53,8 @@ export function convertNode(ast: SPBaseNode): BaseNode {
                 case 'else':
                     resultNode = new ElseCaseNode(ast);
                     break;
+                default:
+                    throw new Error("ast.expression not consider: "+(ast as sqliteParser.ExpressionNode).variant);
             }
             break;
         case 'expression':

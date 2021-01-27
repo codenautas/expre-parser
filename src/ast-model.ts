@@ -7,6 +7,9 @@ import * as sqliteParser from "sqlite-parser";
 import * as ExpresionParser from "./expre-parser";
 import { Compiler } from "./compiler";
 
+// @ts-expect-error ACÁ hay una anomalía porque la mayoría es string, pero algunos no, los que no lo hacen bien!
+const NULL_MAIN_CONTENT:string = null;
+
 export var strictOperatorControl=true;
 
 export interface Insumos{
@@ -111,7 +114,9 @@ export abstract class leafNode extends BaseNode {
 }
 
 export class IdentifierNode extends leafNode {
-    alias: string;
+    // @ts-expect-error tsc no se da cuenta que mainContent está especificando el tipo de super.mainContent y que recibe un valor != null en super()
+    public mainContent: string
+    alias: string | undefined;
     constructor(ast: sqliteParser.IdentifierNode) {
         super('identifier', ast.name);
         if (ast.name.includes('.')) {
@@ -159,13 +164,13 @@ export abstract class ExpressionNode extends BaseNode {
     }
 
     getVariables(): string[] {
-        return [].concat(...this.children.map(nodo => nodo.getVariables()))
+        return ([] as string[]).concat(...this.children.map(nodo => nodo.getVariables()))
     }
     getAliases(): string[] {
-        return [].concat(...this.children.map(nodo => nodo.getAliases()));
+        return ([] as string[]).concat(...this.children.map(nodo => nodo.getAliases()));
     }
     getFunciones(): string[] {
-        return [].concat(...this.children.map(nodo => nodo.getFunciones()))
+        return ([] as string[]).concat(...this.children.map(nodo => nodo.getFunciones()))
     }
 
 }
@@ -230,7 +235,7 @@ export class FunctionExpressionNode extends ExpressionNode {
 }
 export class CaseExpressionNode extends ExpressionNode {
     constructor(ast:any) {
-        super('case', null, ast.expression)
+        super('case', NULL_MAIN_CONTENT, ast.expression)
     }
     get precedence(){
         return OUTER_PRECEDENCE;
@@ -242,7 +247,7 @@ export class CaseExpressionNode extends ExpressionNode {
 }
 export class WhenThenCaseNode extends ExpressionNode {
     constructor(ast:any) {
-        super('when-then-case', null, [ast.condition, ast.consequent])
+        super('when-then-case', NULL_MAIN_CONTENT, [ast.condition, ast.consequent])
     }
     get precedence(){
         return OUTER_PRECEDENCE;
@@ -254,7 +259,7 @@ export class WhenThenCaseNode extends ExpressionNode {
 }
 export class ElseCaseNode extends ExpressionNode {
     constructor(ast:any) {
-        super('else-case', null, [ast.consequent])
+        super('else-case', NULL_MAIN_CONTENT, [ast.consequent])
     }
     get precedence(){
         return OUTER_PRECEDENCE;
