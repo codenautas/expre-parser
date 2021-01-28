@@ -1,7 +1,7 @@
 import { BaseNode, LiteralNode, IdentifierNode, BinaryExpressionNode, UnaryExpressionNode, FunctionExpressionNode, CaseExpressionNode, WhenThenCaseNode, ElseCaseNode } from "./ast-model";
 
 export interface CompilerOptions {
-    varWrapper?: string | null
+    varWrapper?: string | null | ((varname:string)=>string)
     divWrapper?: string | null
     elseWrapper?: string | null
     language?: 'js' | 'sql'
@@ -21,6 +21,12 @@ export class Compiler implements CompilerMethods {
     protected pkExpression?: string; // pk1::text, pk2::text, pk3::text
 
     constructor(public options: CompilerOptions) {
+    }
+
+    wrap(wrapper:undefined|null|string|((expr:string)=>string), expr:string){
+        return wrapper == null ? expr :
+            typeof wrapper == "string" ? `${wrapper}(${expr})`:
+            wrapper(expr);
     }
 
     toCode(node: BaseNode, pkExpression?: string[]): string {
@@ -55,7 +61,7 @@ export class Compiler implements CompilerMethods {
     caseToCode(caseNode:CaseExpressionNode): string {
         return 'case'+caseNode.children.map(node=>node.toCodeWiP(this,caseNode)).join('')+
             (caseNode.children.length && caseNode.children[caseNode.children.length-1].type!='else-case'?
-                ` else ${this.options.elseWrapper}(${this.pkExpression})`
+                ` else ${this.wrap(this.options.elseWrapper, this.pkExpression||'null')}`
             :'')+
             ' end';
     }
@@ -98,7 +104,7 @@ export class Compiler implements CompilerMethods {
     }
 
     identifierToCode(idNode: IdentifierNode): string {
-        return !this.options.varWrapper ? this.baseToCode(idNode) : this.options.varWrapper + '(' + this.baseToCode(idNode) + ')'
+        return this.wrap(this.options.varWrapper,this.baseToCode(idNode))
     }
 
     baseToCode(node: BaseNode): string {

@@ -6,9 +6,11 @@ import * as discrepances from 'discrepances';
 import * as EPModel from '../src/ast-model';
 import { CompilerOptions, Compiler } from '../src/compiler';
 import * as ExpresionParser from '../src/expre-parser';
+// import { strict as assert } from "assert";
 
 function compare<T>(obtained: T, expected: T, opts?: object) {
     try {
+        // assert.deepEqual(obtained, expected);
         discrepances.showAndThrow(obtained, expected, opts);
     } catch (err) {
         console.log('ERROR FORMATO 1');
@@ -148,6 +150,32 @@ describe("expre-parser", function () {
         it('wrap division', function () {
             let obtained = compiler.toCode(ExpresionParser.parse("a/4 > 3 AND t.field/b = 8 OR 3/0 = 1 AND 0/4 < 2"), 'pk1'.split(','));
             let expected = "div(var(a), 4, pk1::text) > 3 and div(var(t.field), var(b), pk1::text) = 8 or div(3, 0, pk1::text) = 1 and div(0, 4, pk1::text) < 2"
+            compare(obtained, expected);
+        });
+    });
+    describe("wrapped by functions", function () {
+        var compilerOptions: CompilerOptions = {
+            varWrapper: (varname:string)=>`vars.${varname}`,
+            divWrapper: 'div',
+            language: 'sql'
+        }
+        var compiler: Compiler;
+        before(function () {
+            compiler = new Compiler(compilerOptions);
+        });
+        it('wrap varname', function () {
+            let obtained = compiler.toCode(ExpresionParser.parse("f(t.field, 33, 'aa', b, '99')"), 'pk1,t2'.split(','));
+            let expected = "f(vars.t.field, 33, 'aa', vars.b, '99')"
+            compare(obtained, expected);
+        });
+        it('wrap simple division', function () {
+            let obtained = compiler.toCode(ExpresionParser.parse("7/4"), 'pk1,t2'.split(','));
+            let expected = "div(7, 4, pk1::text,t2::text)"
+            compare(obtained, expected);
+        });
+        it('wrap division', function () {
+            let obtained = compiler.toCode(ExpresionParser.parse("a/4 > 3 AND t.field/b = 8 OR 3/0 = 1 AND 0/4 < 2"), 'pk1'.split(','));
+            let expected = "div(vars.a, 4, pk1::text) > 3 and div(vars.t.field, vars.b, pk1::text) = 8 or div(3, 0, pk1::text) = 1 and div(0, 4, pk1::text) < 2"
             compare(obtained, expected);
         });
     });

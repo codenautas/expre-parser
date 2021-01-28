@@ -1,7 +1,7 @@
 {
   "name": "expre-parser",
   "description": "expression parser",
-  "version": "0.1.25",
+  "version": "0.1.26",
   "author": "Codenautas <codenautas@googlegroups.com>",
   "contributors": [
     "Raquel N Salva <raquelzssalva@gmail.com>, Eugenio Arosteguy <eugenio.arosteguy@gmail.com>, Emilio Platzer <emilioplatzer@gmail.com>"
@@ -36,7 +36,7 @@
     "git-commit": "git add package.json && (git commit -m \"upgrading stack dependencies\" || true)",
     "push-publish": "npm version patch && ncu -u && npm run git-commit && npm publish && git push",
     "test": "(tsc -p tsconfig-test.json || echo \"continue with errors\") && mocha --reporter spec --bail --check-leaks compile-for-test/test/*.js",
-    "test-strict": "tsc -p tsconfig-test.json && rem mocha --reporter spec --bail --check-leaks compile-for-test/test/*.js",
+    "test-strict": "tsc -p tsconfig-test.json && mocha --reporter spec --bail --check-leaks compile-for-test/test/*.js",
     "test-cov": "istanbul cover node_modules/mocha/bin/_mocha -- --reporter dot --check-leaks test/"
   },
   "qa-control": {
