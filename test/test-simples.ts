@@ -157,6 +157,7 @@ describe("expre-parser", function () {
         var compilerOptions: CompilerOptions = {
             varWrapper: (varname:string)=>`vars.${varname}`,
             divWrapper: 'div',
+            funWrapper: (funname:string)=>`funs.${funname} `,
             language: 'sql'
         }
         var compiler: Compiler;
@@ -165,7 +166,7 @@ describe("expre-parser", function () {
         });
         it('wrap varname', function () {
             let obtained = compiler.toCode(ExpresionParser.parse("f(t.field, 33, 'aa', b, '99')"), 'pk1,t2'.split(','));
-            let expected = "f(vars.t.field, 33, 'aa', vars.b, '99')"
+            let expected = "funs.f (vars.t.field, 33, 'aa', vars.b, '99')"
             compare(obtained, expected);
         });
         it('wrap simple division', function () {

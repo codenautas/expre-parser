@@ -3,7 +3,8 @@ import { BaseNode, LiteralNode, IdentifierNode, BinaryExpressionNode, UnaryExpre
 export interface CompilerOptions {
     varWrapper?: string | null | ((varname:string)=>string)
     divWrapper?: string | null
-    elseWrapper?: string | null
+    elseWrapper?: string | null | ((varname:string)=>string)
+    funWrapper?: string | null | ((varname:string)=>string)
     language?: 'js' | 'sql'
 }
 
@@ -39,7 +40,7 @@ export class Compiler implements CompilerMethods {
     }
 
     functionToCode(funcNode: FunctionExpressionNode): string {
-        return this.baseToCode(funcNode) + '(' + funcNode.children.map(child => child.toCodeWiP(this,funcNode)).join(', ') + ')';
+        return this.wrap(this.options.funWrapper,this.baseToCode(funcNode)) + '(' + funcNode.children.map(child => child.toCodeWiP(this,funcNode)).join(', ') + ')';
     }
 
     unaryToCode(unaryNode: UnaryExpressionNode): string {
