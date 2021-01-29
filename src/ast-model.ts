@@ -61,6 +61,7 @@ export var precedences:{[key:string]:{precedence:number, associative?:true, comp
     is:{precedence:350},
     'is not':{precedence:350},
     'is distinct from':{precedence:350},
+    'not':{precedence:360},
     'and':{precedence:370, associative:true},
     'or':{precedence:380, associative:true},
 }

@@ -44,6 +44,9 @@ export class Compiler implements CompilerMethods {
     }
 
     unaryToCode(unaryNode: UnaryExpressionNode): string {
+        if(this.options.language=='js' && unaryNode.mainContent=='not'){
+            Object.defineProperty(unaryNode,'precedence',{value:105});
+        }
         return this.getOperator(this.baseToCode(unaryNode)) + ' ' + unaryNode.children[0].toCodeWiP(this,unaryNode)
     }
 

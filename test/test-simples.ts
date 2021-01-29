@@ -93,7 +93,8 @@ describe("expre-parser", function () {
             obtained = expectedParsed; //assignation to TS type check   
         });
         it("parse one complete", async function () {
-            let obtained = ExpresionParser.parse("'a'+'b' = 6 AND fun(a,b,c) AND not f(3) OR 6/2 is 3") as EPModel.BinaryExpressionNode;
+            // CUANDO ARREGLEN EL NOT let obtained = ExpresionParser.parse("'a'+'b' = 6 AND fun(a,b,c) AND not f(3) OR 6/2 is 3") as EPModel.BinaryExpressionNode;
+            let obtained = ExpresionParser.parse("'a'+'b' = 6 AND fun(a,b,c) AND not (f(3)) OR 6/2 is 3") as EPModel.BinaryExpressionNode;
             // let expectedParsed = new EP.BinaryExpressionNode(<sqliteParser.BinaryExpressionNode>{put here the json in format sqliteParser.BinaryExpressionNode});
             let expectedJsonObj: object = { type: "binary", mainContent: "or", children: [{ type: "binary", mainContent: "and", children: [{ type: "binary", mainContent: "and", children: [{ type: "binary", mainContent: "=", children: [{ type: "binary", mainContent: "+", children: [{ type: "literal", mainContent: "a", dataType: "text" }, { type: "literal", mainContent: "b", dataType: "text" }] }, { type: "literal", mainContent: "6", dataType: "decimal" }] }, { type: "function", mainContent: "fun", children: [{ type: "identifier", mainContent: "a" }, { type: "identifier", mainContent: "b" }, { type: "identifier", mainContent: "c" }] }] }, { type: "unary", mainContent: "not", children: [{ type: "function", mainContent: "f", children: [{ type: "literal", mainContent: "3", dataType: "decimal" }] }] }] }, { type: "binary", mainContent: "is", children: [{ type: "binary", mainContent: "/", children: [{ type: "literal", mainContent: "6", dataType: "decimal" }, { type: "literal", mainContent: "2", dataType: "decimal" }] }, { type: "literal", mainContent: "3", dataType: "decimal" }] }] }
             compare(obtained, expectedJsonObj, { duckTyping: true });
@@ -123,6 +124,18 @@ describe("expre-parser", function () {
                     throw new Error('Tenía que dar error porque la expresion "'+invalExp+'" es no la queremos');
                 } catch(err){
                     discrepances.showAndThrow(err.message, 'ast.type not consider: '+ ast.type);
+                }
+            })
+        });
+        it("cualquier cosa", async function () {
+            ['not a', 'a and not b = 3','not (b) and not falseado'].forEach(invalExp => {
+                let ast:sqliteParser.BaseNode;
+                try {
+                    ast = ExpresionParser.sqlite_parse(invalExp);
+                    ExpresionParser.convertNode(ast);
+                    throw new Error('Tenía que dar error porque la expresion "'+invalExp+'" es no la queremos');
+                } catch(err){
+                    discrepances.showAndThrow(err.message, `La expresion "${invalExp}" no es valida`);
                 }
             })
         });
@@ -187,17 +200,25 @@ describe("expre-parser", function () {
             language: 'sql'
         }
         var compiler: Compiler;
+        var compilerJs: Compiler;
         before(function () {
             compiler = new Compiler(compilerOptions);
+            compilerJs = new Compiler({...compilerOptions, language:'js'})
         });
         it('dont add unuseful parenthesis', function () {
-            let obtained = compiler.toCode(ExpresionParser.parse("a and not b or c or d and e"), 'pk1,t2'.split(','));
+            // CUANDO ARREGLEN EL NOT let obtained = compiler.toCode(ExpresionParser.parse("a and not b or c or d and e"), 'pk1,t2'.split(','));
+            let obtained = compiler.toCode(ExpresionParser.parse("a and not (b) or c or d and e"), 'pk1,t2'.split(','));
             let expected = "a and not b or c or d and e"
             compare(obtained, expected);
         });
         it('dont lose parenthesis 2', function () {
             let obtained = compiler.toCode(ExpresionParser.parse("a and not (b or c) or d and e"), 'pk1,t2'.split(','));
             let expected = "a and not (b or c) or d and e"
+            compare(obtained, expected);
+        });
+        it('dont lose parenthesis 2 in JS', function () {
+            let obtained = compilerJs.toCode(ExpresionParser.parse("a and not (b or c) or d and e"), 'pk1,t2'.split(','));
+            let expected = "a && ! (b || c) || d && e"
             compare(obtained, expected);
         });
         it('dont lose parenthesis 3', function () {
@@ -213,6 +234,23 @@ describe("expre-parser", function () {
         it('dont lose parenthesis 5', function () {
             let obtained = compiler.toCode(ExpresionParser.parse("a and (not (b or c) or d and e)"), 'pk1,t2'.split(','));
             let expected = "a and (not (b or c) or d and e)"
+            compare(obtained, expected);
+        });
+        it('dont lose parenthesis 5 JS', function () {
+            let obtained = compilerJs.toCode(ExpresionParser.parse("a and (not (b or c) or d and e)"), 'pk1,t2'.split(','));
+            let expected = "a && (! (b || c) || d && e)"
+            compare(obtained, expected);
+        });
+        it('add !() in JS', function () {
+            // CUANDO ARREGLEN EL NOT let obtained = compilerJs.toCode(ExpresionParser.parse("a and not b = c or not b <> c"), 'pk1,t2'.split(','));
+            let obtained = compilerJs.toCode(ExpresionParser.parse("a and not(b = c) or not (b <> c)"), 'pk1,t2'.split(','));
+            let expected = "a && ! (b == c) || ! (b != c)"
+            compare(obtained, expected);
+        });
+        it('not add !() in JS', function () {
+            // CUANDO ARREGLEN EL NOT let obtained = compilerJs.toCode(ExpresionParser.parse("a and not b = c or not b <> c"), 'pk1,t2'.split(','));
+            let obtained = compilerJs.toCode(ExpresionParser.parse("not (a) and not(f(b))"), 'pk1,t2'.split(','));
+            let expected = "! a && ! f(b)"
             compare(obtained, expected);
         });
     });
@@ -232,7 +270,8 @@ describe("expre-parser", function () {
         it('simple expressions toJavascript', function () {
             compilerOptions.language = 'js'
             compiler = new Compiler(compilerOptions);
-            let obtained = compiler.toCode(ExpresionParser.parse("(a+b)>c AND b is null OR not t.c"), 'pk2'.split(','));
+            // CUANDO ARREGLEN EL NOT let obtained = compiler.toCode(ExpresionParser.parse("(a+b)>c AND b is null OR not t.c"), 'pk2'.split(','));
+            let obtained = compiler.toCode(ExpresionParser.parse("(a+b)>c AND b is null OR not (t.c)"), 'pk2'.split(','));
             let expected = "a + b > c && b == null || ! t.c"
             compare(obtained, expected);
         });
@@ -245,7 +284,8 @@ describe("expre-parser", function () {
         it('other parenthesis expression toCode', function () {
             compilerOptions.language = 'sql'
             compiler = new Compiler(compilerOptions);
-            let obtained = compiler.toCode(ExpresionParser.parse("((a and d) and not (b or not c)) = (a <= 2)"), 'pk1'.split(','));
+            // CUANDO ARREGLEN EL NOT let obtained = compiler.toCode(ExpresionParser.parse("((a and d) and not (b or not c)) = (a <= 2)"), 'pk1'.split(','));
+            let obtained = compiler.toCode(ExpresionParser.parse("((a and d) and not (b or not (c))) = (a <= 2)"), 'pk1'.split(','));
             let expected = "(a and d and not (b or not c)) = (a <= 2)"
             compare(obtained, expected);
         });

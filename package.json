@@ -1,7 +1,7 @@
 {
   "name": "expre-parser",
   "description": "expression parser",
-  "version": "0.1.27",
+  "version": "0.2.0",
   "author": "Codenautas <codenautas@googlegroups.com>",
   "contributors": [
     "Raquel N Salva <raquelzssalva@gmail.com>, Eugenio Arosteguy <eugenio.arosteguy@gmail.com>, Emilio Platzer <emilioplatzer@gmail.com>"

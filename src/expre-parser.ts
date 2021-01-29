@@ -9,6 +9,18 @@ export * from './ast-model';
 export * from './compiler';
 
 function prepareToSqliteParser(exp: string|number){
+    var re=/not\s*(\S+)\b/ig;
+    var tieneNot:RegExpMatchArray|null
+    var expstr=exp.toString();
+    while(tieneNot=re.exec(expstr)){
+        var encontre = tieneNot[1].toLocaleLowerCase();
+        if(encontre[0]=='(' || encontre == 'null' || encontre == 'true' || encontre == 'false'){
+            // ok
+        }else{
+            console.log('FALLA',exp,'POR',tieneNot);
+            throw new Error("expression not consider: NOT without parentheses");
+        }
+    }
     return 'select ' + exp.toString().replace(/::text/g,'');
 }
 
