@@ -303,6 +303,42 @@ describe("expre-parser", function () {
             let expected = "b != null && b != 3"
             compare(obtained, expected);
         });
+        it("is distinct from (sql)", async function () {
+            compilerOptions.language = 'sql'
+            compiler = new Compiler(compilerOptions);
+            let obtained = compiler.toCode(ExpresionParser.parse("t35 is distinct from 1 and t32_d is distinct from (-9) or a is distinct from b"), 'pk2'.split(','));
+            let expected = "t35 is distinct from 1 and t32_d is distinct from - 9 or a is distinct from b"
+            compare(obtained, expected);
+        });
+        it("is distinct from no cambia is null ni is not null", async function () {
+            compilerOptions.language = 'sql'
+            compiler = new Compiler(compilerOptions);
+            let obtained = compiler.toCode(ExpresionParser.parse("a is null and b is not null and c is distinct from 2"), 'pk2'.split(','));
+            let expected = "a is null and b is not null and c is distinct from 2"
+            compare(obtained, expected);
+        });
+        it("is distinct from (js)", async function () {
+            compilerOptions.language = 'js'
+            compiler = new Compiler(compilerOptions);
+            let obtained = compiler.toCode(ExpresionParser.parse("a is distinct from 1"), 'pk2'.split(','));
+            let expected = "a != 1"
+            compare(obtained, expected);
+        });
+        it("not dentro de un nombre no es un not", async function () {
+            compilerOptions.language = 'sql'
+            compiler = new Compiler(compilerOptions);
+            let obtained = compiler.toCode(ExpresionParser.parse("t_diasnotr1p > 0 and notas = 1"), 'pk2'.split(','));
+            let expected = "t_diasnotr1p > 0 and notas = 1"
+            compare(obtained, expected);
+        });
+        it("not sin paréntesis sigue dando error", async function () {
+            try {
+                ExpresionParser.parse("not informado(x)");
+                throw new Error("debió fallar");
+            } catch (err) {
+                compare((err as Error).message, 'La expresion "not informado(x)" no es valida');
+            }
+        });
         it("inside functions", async function () {
             var expr="f(g(x))+abs(a-1) = f(y) or tiene_permiso('pepe')"
             compilerOptions.language = 'sql'

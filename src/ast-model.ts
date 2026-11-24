@@ -175,9 +175,42 @@ export abstract class ExpressionNode extends BaseNode {
     }
 
 }
+
+/**
+ * Devuelve true si el nodo es null, true o false: los únicos valores que PostgreSQL acepta después de "is" / "is not".
+ * sqlite-parser devuelve null como literal y true / false como identificadores, por eso se miran los dos tipos.
+ */
+function esNullTrueOFalse(nodo: sqliteParser.BaseNode): boolean {
+    var texto: string | undefined;
+    if (nodo.type == 'literal') {
+        texto = (nodo as sqliteParser.LiteralNode).value;
+    } else if (nodo.type == 'identifier') {
+        texto = (nodo as sqliteParser.IdentifierNode).name;
+    }
+    return texto != null && ['null', 'true', 'false'].includes(texto.toLowerCase());
+}
+
+/**
+ * Operador que se guarda en el nodo binario.
+ *
+ * Es el mismo que trae sqlite-parser, salvo un caso: sqlite-parser no conoce "is distinct from", así que
+ * prepareToSqliteParser (en expre-parser.ts) lo reemplaza por "is not", su equivalente en SQLite. Acá se deshace
+ * ese reemplazo: un "is not" seguido de algo que no es null, true ni false sólo puede venir de un "is distinct from"
+ * (un "a is not 1" escrito a mano lo rechaza antes el control de "not sin paréntesis"), y en PostgreSQL tiene que
+ * volver a escribirse "is distinct from".
+ */
+function operadorParaPostgres(ast: sqliteParser.BinaryExpressionNode): string {
+    var esIsNot = ast.operation.toLowerCase() == 'is not';
+    if (esIsNot && !esNullTrueOFalse(ast.right)) {
+        return 'is distinct from';
+    }
+    return ast.operation;
+}
+
 export class BinaryExpressionNode extends ExpressionNode {
     constructor(ast: sqliteParser.BinaryExpressionNode) {
-        super('binary', ast.operation, [ast.left, ast.right])
+        // el operador queda en mainContent y el compilador lo escribe tal cual en el código generado
+        super('binary', operadorParaPostgres(ast), [ast.left, ast.right])
     }
     get precedence(){
         if(!precedences[this.mainContent]){

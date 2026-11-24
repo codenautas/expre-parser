@@ -92,6 +92,7 @@ export class Compiler implements CompilerMethods {
             case '=': return '=='
             case '<>': return '!='
             case 'is not': return '!='
+            case 'is distinct from': return '!='
             default: return operator // common sql/js operators: + - < > / * 
         }
     }

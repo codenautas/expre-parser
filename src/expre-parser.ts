@@ -8,8 +8,14 @@ import { BaseNode, LiteralNode, IdentifierNode, FunctionExpressionNode, BinaryEx
 export * from './ast-model';
 export * from './compiler';
 
+// sqlite-parser no conoce "is distinct from" de PostgreSQL. Antes de parsear se reemplaza por "is not", que en
+// SQLite significa lo mismo (compara tratando los nulos como un valor más), y al armar el árbol
+// operadorParaPostgres (en ast-model.ts) lo vuelve a "is distinct from".
+const IS_DISTINCT_FROM = /\bis\s+distinct\s+from\b/ig;
+
 function prepareToSqliteParser(exp: string|number){
-    var re=/not\s*(\S+)\b/ig;
+    // \b: el "not" tiene que ser una palabra, no parte de un nombre (t_diasnotr1p)
+    var re=/\bnot\b\s*(\S+)\b/ig;
     var tieneNot:RegExpMatchArray|null
     var expstr=exp.toString();
     while(tieneNot=re.exec(expstr)){
@@ -21,7 +27,11 @@ function prepareToSqliteParser(exp: string|number){
             throw new Error("expression not consider: NOT without parentheses");
         }
     }
-    return 'select ' + exp.toString().replace(/::text/g,'');
+    var paraSqlite = exp.toString()
+        .replace(/::text/g,'')                 // sqlite-parser no conoce los casts de PostgreSQL
+        .replace(IS_DISTINCT_FROM, 'is not');   // ver IS_DISTINCT_FROM
+    // sqlite-parser sólo parsea sentencias completas: la expresión va como el resultado de un select
+    return 'select ' + paraSqlite;
 }
 
 export function sqlite_parse(expression: string|number){
