@@ -7,6 +7,7 @@
     "Raquel N Salva <raquelzssalva@gmail.com>, Eugenio Arosteguy <eugenio.arosteguy@gmail.com>, Emilio Platzer <emilioplatzer@gmail.com>"
   ],
   "license": "MIT",
+  "repository": "codenautas/expre-parser",
   "main": "dist/expre-parser.js",
   "types": "dist/expre-parser.d.ts",
   "files": [
@@ -28,15 +29,11 @@
   },
   "scripts": {
     "prepare": "npm run build",
-    "build-strict": "tsc -p tsconfig-server.json && mixin-patch",
-    "build": "(tsc -p tsconfig-server.json  || echo \"continue w/error\") && mixin-patch",
-    "watch:buildS": "(tsc -p tsconfig-server.json --watch || echo \"continue w/error\")",
+    "build": "tsc -p tsconfig-server.json && mixin-patch",
+    "watch:buildS": "tsc -p tsconfig-server.json --watch",
     "start": "node dist/server/expre-parser.js",
     "clink": "npm prune && npm i && npm run build && npm link varcal && npm run build",
-    "git-commit": "git add package.json && (git commit -m \"upgrading stack dependencies\" || true)",
-    "push-publish": "npm version patch && ncu -u && npm run git-commit && npm publish && git push",
-    "test": "(tsc -p tsconfig-test.json || echo \"continue with errors\") && mocha --reporter spec --bail --check-leaks compile-for-test/test/*.js",
-    "test-strict": "tsc -p tsconfig-test.json && mocha --reporter spec --bail --check-leaks compile-for-test/test/*.js",
+    "test": "tsc -p tsconfig-test.json && mocha --reporter spec --bail --check-leaks compile-for-test/test/*.js",
     "test-cov": "istanbul cover node_modules/mocha/bin/_mocha -- --reporter dot --check-leaks test/"
   },
   "qa-control": {

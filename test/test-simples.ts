@@ -109,7 +109,7 @@ describe("expre-parser", function () {
                     ExpresionParser.sqlite_parse(invalExp) as EPModel.LiteralNode;
                     throw new Error('Tenía que dar error, porque la expresion "'+invalExp+'" es sintaxis inválida');
                 } catch(err){
-                    discrepances.showAndThrow(err.message, 'La expresion '+JSON.stringify(invalExp)+' no es valida');
+                    discrepances.showAndThrow((err as Error).message, 'La expresion '+JSON.stringify(invalExp)+' no es valida');
                 }
             })
         });
@@ -123,7 +123,7 @@ describe("expre-parser", function () {
                     ExpresionParser.convertNode(ast);
                     throw new Error('Tenía que dar error porque la expresion "'+invalExp+'" es no la queremos');
                 } catch(err){
-                    discrepances.showAndThrow(err.message, 'ast.type not consider: '+ ast.type);
+                    discrepances.showAndThrow((err as Error).message, 'ast.type not consider: '+ ast.type);
                 }
             })
         });
@@ -135,7 +135,7 @@ describe("expre-parser", function () {
                     ExpresionParser.convertNode(ast);
                     throw new Error('Tenía que dar error porque la expresion "'+invalExp+'" es no la queremos');
                 } catch(err){
-                    discrepances.showAndThrow(err.message, `La expresion "${invalExp}" no es valida`);
+                    discrepances.showAndThrow((err as Error).message, `La expresion "${invalExp}" no es valida`);
                 }
             })
         });
